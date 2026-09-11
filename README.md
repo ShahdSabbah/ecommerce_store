@@ -1,66 +1,185 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🛒 منصة المتجر الإلكتروني المتكاملة | E-Commerce Platform (Laravel 10)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-## About Laravel
+مشروع متجر إلكتروني متكامل وعصري مبني باستخدام **Laravel 10** و **Bootstrap 5**، يدعم اللغة العربية والاتجاه من اليمين لليسار (**RTL**) بالكامل، مع لوحة تحكم إدارية متقدمة مبنية بقالب **Metronic**، ونظام حماية خاص ومتقدم للسوبر أدمن (**Super Admin**).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🌟 أبرز مميزات المشروع (Key Features)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🛍️ 1. واجهة المتجر للعملاء (Storefront)
+* **تصفح المنتجات**: عرض أحدث المنتجات المتوفرة مع الأسعار، المخزون، والصور.
+* **تصفية ذكية (Category Filter)**: شريط تصنيفات تفاعلي لتصفية المنتجات حسب القسم بنقرة واحدة.
+* **سلة تسوق ديناميكية (Cart)**:
+  * تعتمد على الـ Session مع عداد لحظي في الهيدر.
+  * زيادة / إنقاص كمية المنتجات بأزرار سريعة.
+  * حذف العناصر وحساب إجمالي الفاتورة تلقائياً.
+* **إتمام الطلب (Checkout)**:
+  * تعبئة بيانات العنوان والتوصيل ورقم الهاتف.
+  * دعم خيار "الدفع عند الاستلام" (Cash on Delivery).
+  * حفظ تفاصيل الفاتورة في جدول الطلبات وتفريغ السلة تلقائياً.
+* **المصادقة وإدارة الحساب (Auth)**: تسجيل دخول، تسجيل حساب جديد، وتعديل الملف الشخصي عبر **Laravel Breeze**.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 📊 2. لوحة تحكم الإدارة (Admin Dashboard)
+* **إحصائيات ومؤشرات فورية (KPIs)**:
+  * إجمالي المبيعات المكتملة بالأرقام.
+  * إجمالي الطلبات والطلبات قيد الانتظار.
+  * عدد المنتجات المتوفرة في المخزون.
+* **إدارة الأقسام (Categories Management)**: إنشاء، تعديل، حذف الأقسام مع الترقيم (Pagination).
+* **إدارة المنتجات (Products Management)**:
+  * إضافة منتجات جديدة مع تحديد السعر، المخزون، الوصف والقسم.
+  * رفع صور المنتجات على وحدة التخزين وحذف الصور القديمة تلقائياً عند التعديل أو الحذف.
+* **إدارة ومتابعة الطلبات (Orders Management)**:
+  * عرض جميع الطلبات مع تفاصيل العميل والمبلغ الإجمالي.
+  * صفحة فاتورة تفصيلية تستعرض المنتجات المشتراة بأسعارها لحظة الشراء.
+  * تحديث حالة الطلب الفورية (`pending` ➜ `processing` ➜ `completed` ➜ `cancelled`).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 👑 3. لوحة تحكم السوبر أدمن الحصرية (Super Admin Features)
+* **إدارة المستخدمين والصلاحيات (User Management)**:
+  * شاشة خاصة لا تفتح إلا للمستخدمين الذين يحملون صلاحية `is_super_admin`.
+  * إحصائيات للمستخدمين (إجمالي المسجلين، المشرفين، السوبر أدمن، والعملاء).
+  * بحث بالاسم أو البريد، وتصفية حسب الرتبة.
+  * ترقية المستخدمين لمدراء وتفعيل/إلغاء صلاحية السوبر أدمن.
+  * **حماية أمان متقدمة**: منع السوبر أدمن من حذف حسابه الشخصي أو إلغاء الصلاحية عن نفسه بالخطأ.
+* **نظام الوثائق والفواتير الخاصة المشفرة (Private Storage System)**:
+  * رفع وتخزين وثائق المستخدمين (هويات، عقود) أو فواتير خاصة وسرية.
+  * تخزين الملفات والصور في المجلد المحمي `storage/app/private/documents` وهو مجلد **معزول تماماً عن الويب العام**.
+  * منع الوصول المباشر للرابط؛ حيث يتم بث الملف كـ Stream مشفر يمر حصرياً عبر `SuperAdminMiddleware`.
+  * دعم الصور (JPG, PNG, WEBP, GIF) وملفات PDF مع ميزة المعاينة والتحميل والحذف.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠️ حزمة التقنيات المستخدمة (Tech Stack)
 
-### Premium Partners
+| التقنية | الاستخدام |
+| :--- | :--- |
+| **Laravel 10.x** | إطار العمل الرئيسي للواجهة الخلفية (Backend) |
+| **PHP 8.1+** | لغة البرمجة الأساسية |
+| **MySQL** | قاعدة البيانات العلائقية |
+| **Blade & Bootstrap 5** | قوالب العرض والواجهات الأمامية (Storefront) |
+| **Metronic Theme (RTL)** | قالب لوحة تحكم الإدارة الاحترافي |
+| **Laravel Breeze** | حزمة المصادقة وتسجيل المستخدمين |
+| **Bootstrap Icons** | حزمة الأيقونات المستخدمة |
+| **Vite** | حزم الأصول وملفات التنسيق |
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+---
 
-## Contributing
+## 🗄️ مخطط بنية قاعدة البيانات (Database Schema)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+* **`users`**: يحفظ بيانات المستخدمين، الدور (`role`: admin / customer)، وصلاحية السوبر أدمن (`is_super_admin`: boolean).
+* **`categories`**: أقسام وتصنيفات المنتجات.
+* **`products`**: المنتجات والمخزون والأسعار والصور (مرتبط بـ categories).
+* **`orders`**: فواتير الطلبات وحالات الشحن وبيانات العميل وعنوان التوصيل.
+* **`order_items`**: تفاصيل المنتجات داخل كل طلب بأسعارها لحظة الشراء (مرتبط بـ orders و products).
+* **`private_documents`**: وثائق وفواتير السوبر أدمن المحمية (مرتبط بـ users).
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🚀 دليل التثبيت والتشغيل المحلي (Installation Guide)
 
-## Security Vulnerabilities
+اتبع الخطوات التالية لتشغيل المشروع على جهازك المحلي (عبر XAMPP أو أي بيئة PHP محلية):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 1. استنساخ المستودع (Clone Repository)
+```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd ecommerce-store
+```
 
-## License
+### 2. تثبيت مكتبات Composer
+```bash
+composer install
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 3. تثبيت حزم الـ Node وبناء الملفات
+```bash
+npm install
+npm run build
+```
+
+### 4. إعداد ملف البيئة (.env)
+قم بنسخ ملف `.env.example` إلى `.env`:
+```bash
+cp .env.example .env
+```
+ثم قم بإنشاء مفتاح التطبيق:
+```bash
+php artisan key:generate
+```
+
+### 5. إعداد قاعدة البيانات
+افتح ملف `.env` وقم بضبط إعدادات قاعدة البيانات الخاصة بك:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ecommerce_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
+*(تأكد من إنشاء قاعدة بيانات باسم `ecommerce_db` في phpMyAdmin أو MySQL)*.
+
+### 6. تشغيل التهجيرات والبيانات التجريبية (Migrations & Seeders)
+```bash
+php artisan migrate --seed
+```
+
+### 7. ربط مجلد التخزين العام (Storage Link)
+```bash
+php artisan storage:link
+```
+
+### 8. تشغيل خادم التطوير (Local Server)
+```bash
+php artisan serve
+```
+يمكنك الآن فتح المتجر على المتصفح عبر: `http://127.0.0.1:8000`
+
+---
+
+## 🔐 حسابات الدخول الافتراضية (Default Accounts)
+
+بعد تشغيل الـ Migrations والبيانات، تتوفر الأدوار التالية:
+
+| الدور | الصلاحيات |
+| :--- | :--- |
+| **👑 Super Admin** | وصول كامل للمتجر، لوحة التحكم، إدارة المستخدمين، والوثائق والفواتير الخاصة (`storage/app/private`). |
+| **🛡️ Admin** | إدارة الأقسام، المنتجات، ومتابعة الطلبات وتحديث حالاتها. |
+| **👤 Customer** | تصفح المتجر، إضافة المنتجات للسلة، وإتمام الطلبات ومتابعتها. |
+
+---
+
+## 📁 هيكلية التخزين والمجلدات المحمية
+
+```text
+storage/
+├── app/
+│   ├── public/              # صور المنتجات العامة (متاحة عبر رابط مباشر)
+│   └── private/             # 🔒 ملفات ووثائق السوبر أدمن (محمية ومحجوبة تماماً)
+│       └── documents/       # الوثائق والفواتير الخاصة
+```
+
+---
+
+## 🤝 المساهمة (Contributing)
+
+المساهمات مرحب بها دائماً! إذا كان لديك أي اقتراح أو تحسين:
+1. قم بعمل Fork للمستودع.
+2. أنشئ فرعاً لميزتك (`git checkout -b feature/NewFeature`).
+3. احفظ تعديلاتك (`git commit -m 'Add some NewFeature'`).
+4. ارفع الفرع (`git push origin feature/NewFeature`).
+5. افتح Pull Request للمراجعة.
+
+---
+
+## 📄 الترخيص (License)
+
+هذا المشروع مرخص تحت رخصة **[MIT License](LICENSE)**.
