@@ -75,7 +75,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 
-// 👑 4. مسارات السوبر أدمن (متاحة حصرياً للسوبر أدمن)
+//  4. مسارات السوبر أدمن (متاحة حصرياً للسوبر أدمن)
 Route::middleware(['auth', 'super_admin'])->group(function () {
     Route::resource('users', UserController::class);
 
@@ -86,7 +86,7 @@ Route::middleware(['auth', 'super_admin'])->group(function () {
 });
 
 
-// 👤 5. مسارات الملف الشخصي (متاحة لكل مستخدم مسجل دخوله)
+//  5. مسارات الملف الشخصي (متاحة لكل مستخدم مسجل دخوله)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
