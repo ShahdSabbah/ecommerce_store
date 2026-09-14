@@ -42,11 +42,13 @@
                     <td class="text-end">
                         <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-light-warning">تعديل</a>
                         
+                        @can('delete-products')
                         <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-light-danger" onclick="return confirm('هل أنتِ متأكدة من الحذف؟')">حذف</button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty
