@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Cart; 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CartController extends Controller
 {
@@ -13,9 +14,14 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $cartItems = Cart::with('product')
-            ->where('user_id', $request->user()->id)
-            ->get();
+        $userId = $request->user()->id;
+        $cacheKey = "user_cart_{$userId}";
+
+        $cartItems = Cache::remember($cacheKey, 600, function () use ($userId) {
+            return Cart::with('product')
+                ->where('user_id', $userId)
+                ->get();
+        });
 
         return response()->json([
             'status' => true,
@@ -25,7 +31,31 @@ class CartController extends Controller
     }
 
     /**
-     *  إضافة منتج للسلة (أو زيادة كميته)
+     * @OA\Post(
+     *      path="/api/cart",
+     *      operationId="addToCart",
+     *      tags={"Cart"},
+     *      summary="إضافة منتج للسلة",
+     *      security={{"bearerAuth": {}}},
+     *      @OA\Parameter(
+     *          name="Accept",
+     *          in="header",
+     *          required=true,
+     *          @OA\Schema(type="string", default="application/json")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"product_id","quantity"},
+     *              @OA\Property(property="product_id", type="integer", example=2),
+     *              @OA\Property(property="quantity", type="integer", example=2)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="تمت إضافة المنتج بنجاح"
+     *      )
+     * )
      */
     public function store(Request $request)
     {
@@ -52,6 +82,9 @@ class CartController extends Controller
             ]);
         }
 
+        // تفريغ كاش السلة للمستخدم بعد التعديل
+        Cache::forget("user_cart_{$userId}");
+
         return response()->json([
             'status' => true,
             'message' => 'تمت إضافة المنتج إلى السلة بنجاح',
@@ -64,7 +97,9 @@ class CartController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $cartItem = Cart::where('user_id', $request->user()->id)
+        $userId = $request->user()->id;
+
+        $cartItem = Cart::where('user_id', $userId)
             ->where('id', $id)
             ->first();
 
@@ -76,6 +111,9 @@ class CartController extends Controller
         }
 
         $cartItem->delete();
+
+        // تفريغ كاش السلة للمستخدم بعد الحذف
+        Cache::forget("user_cart_{$userId}");
 
         return response()->json([
             'status' => true,

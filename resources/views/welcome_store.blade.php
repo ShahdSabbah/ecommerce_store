@@ -1,13 +1,18 @@
+<?php
+/**
+ * Welcome Store Blade View
+ * Updated to use translation files and a locale‑aware language toggle button.
+ */
+?>
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجرنا الإلكتروني</title>
+    <title>{{ __('messages.title') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
         .navbar-custom { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
@@ -22,22 +27,37 @@
 </head>
 <body>
 
-    <!-- 🌐 الهيدر العلوي -->
+    <!-- 🌐 Header -->
     <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary fs-4" href="{{ route('home') }}">
-                <i class="bi bi-bag-heart-fill me-1"></i> متجرنا
+            <a class="navbar-brand fw-bold text-primary fs-4" href="{{ route('home', ['locale'=>app()->getLocale()]) }}">
+                <i class="bi bi-bag-heart-fill me-1"></i> {{ __('messages.brand') }}
             </a>
 
             <div class="d-flex align-items-center gap-3">
-                <!-- زر السلة مع العداد -->
+                <!-- Cart button -->
                 <a href="{{ route('cart.index') }}" class="btn btn-outline-primary rounded-pill px-3 position-relative fw-bold me-2">
-                    🛒 السلة
+                    🛒 {{ __('messages.cart') }}
                     @if(session('cart') && count(session('cart')) > 0)
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {{ count(session('cart')) }}
                         </span>
                     @endif
+                </a>
+
+                <!-- Language toggle (single button) -->
+                @php
+                    $other = app()->getLocale() === 'ar' ? 'en' : 'ar';
+                    $segments = request()->segments();
+                    if (!empty($segments)) {
+                        $segments[0] = $other;
+                    } else {
+                        $segments = [$other];
+                    }
+                    $url = url(implode('/', $segments));
+                @endphp
+                <a href="{{ $url }}" class="btn btn-outline-secondary rounded-pill px-2 fw-bold">
+                    {{ $other == 'ar' ? 'العربية' : 'English' }}
                 </a>
 
                 @auth
@@ -59,35 +79,33 @@
                         </ul>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">دخول</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary rounded-pill px-4 fw-bold text-white">تسجيل جديد</a>
+                    <a href="{{ route('login', ['locale'=>app()->getLocale()]) }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">{{ __('messages.login') }}</a>
+                    <a href="{{ route('register', ['locale'=>app()->getLocale()]) }}" class="btn btn-primary rounded-pill px-4 fw-bold text-white">{{ __('messages.register') }}</a>
                 @endauth
             </div>
         </div>
     </nav>
 
-    <!-- 🏷️ شريط الأقسام المفلتر -->
+    <!-- 🏷️ Category filter bar -->
     <section class="py-4 bg-white border-bottom">
         <div class="container">
             <div class="d-flex gap-2 overflow-auto pb-2">
-                <a href="{{ route('home') }}" class="category-chip {{ !request('category_id') ? 'active' : '' }}">
-                    الكل 🛒
-                </a>
+                <a href="{{ route('home', ['locale'=>app()->getLocale()]) }}" class="category-chip {{ !request('category_id') ? 'active' : '' }}">{{ __('messages.all') }} 🛒</a>
 
                 @foreach($categories as $category)
-                    <a href="{{ route('home', ['category_id' => $category->id]) }}" 
+                    <a href="{{ route('home', ['locale'=>app()->getLocale(), 'category_id' => $category->id]) }}"
                        class="category-chip {{ request('category_id') == $category->id ? 'active' : '' }}">
-                       {{ $category->name }}
+                        {{ $category->name }}
                     </a>
                 @endforeach
             </div>
         </div>
     </section>
 
-    <!-- 🛍️ عرض المنتجات -->
+    <!-- 🛍️ Products display -->
     <section class="py-5">
         <div class="container">
-            {{-- تنبيه رسالة النجاح عند الإضافة --}}
+            {{-- Success message after adding to cart --}}
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                     {{ session('success') }}
@@ -95,7 +113,7 @@
                 </div>
             @endif
 
-            <h4 class="fw-bold text-dark mb-4">أحدث المنتجات 🌟</h4>
+            <h4 class="fw-bold text-dark mb-4">{{ __('messages.latest_products') }} 🌟</h4>
 
             <div class="row g-4">
                 @forelse($products as $product)
@@ -104,15 +122,13 @@
                             @if($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" class="product-img rounded-4" alt="{{ $product->name }}">
                             @else
-                                <div class="product-img rounded-4 d-flex align-items-center justify-content-center text-muted">
-                                    <i class="bi bi-image fs-1"></i>
-                                </div>
+                                <div class="product-img rounded-4 d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image fs-1"></i></div>
                             @endif
 
                             <div class="card-body d-flex flex-column justify-content-between p-3">
                                 <div>
                                     <span class="badge bg-light text-primary rounded-pill px-3 py-1 mb-2 border">
-                                        {{ $product->category->name ?? 'عام' }}
+                                        {{ $product->category->name ?? __('messages.general') }}
                                     </span>
                                     <h6 class="fw-bold text-dark mb-1">{{ $product->name }}</h6>
                                     <p class="text-muted small mb-3 text-truncate">{{ $product->description }}</p>
@@ -126,9 +142,7 @@
                                     <form action="{{ route('cart.add', $product->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary btn-cart w-100">
-                                            🛒 إضافة للسلة
-                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-cart w-100">🛒 {{ __('messages.add_to_cart') }}</button>
                                     </form>
                                 </div>
                             </div>
@@ -137,7 +151,7 @@
                 @empty
                     <div class="col-12 text-center py-5">
                         <i class="bi bi-box-seam fs-1 text-muted"></i>
-                        <p class="text-muted mt-2 fs-5">لا توجد منتجات مضافة حالياً بالمتجر.</p>
+                        <p class="text-muted mt-2 fs-5">{{ __('messages.no_products') }}</p>
                     </div>
                 @endforelse
             </div>

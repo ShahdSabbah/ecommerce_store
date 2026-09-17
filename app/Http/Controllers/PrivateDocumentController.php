@@ -102,7 +102,8 @@ class PrivateDocumentController extends Controller
      */
     public function show(PrivateDocument $private_document)
     {
-        if (!Storage::disk('private')->exists($private_document->file_path)) {
+        // التحقق أن المسار غير فارغ قبل إرساله للـ Storage
+        if (empty($private_document->file_path) || !Storage::disk('private')->exists($private_document->file_path)) {
             abort(404, 'الملف غير موجود في التخزين المحمي.');
         }
 
@@ -118,7 +119,8 @@ class PrivateDocumentController extends Controller
      */
     public function download(PrivateDocument $private_document)
     {
-        if (!Storage::disk('private')->exists($private_document->file_path)) {
+        // التحقق أن المسار غير فارغ قبل إرساله للـ Storage
+        if (empty($private_document->file_path) || !Storage::disk('private')->exists($private_document->file_path)) {
             abort(404, 'الملف غير موجود في التخزين المحمي.');
         }
 
@@ -133,8 +135,8 @@ class PrivateDocumentController extends Controller
      */
     public function destroy(PrivateDocument $private_document)
     {
-        // حذف الملف الفعلي من storage/app/private
-        if (Storage::disk('private')->exists($private_document->file_path)) {
+        // حذف الملف الفعلي إذا كان المسار موجدوهاً
+        if (!empty($private_document->file_path) && Storage::disk('private')->exists($private_document->file_path)) {
             Storage::disk('private')->delete($private_document->file_path);
         }
 

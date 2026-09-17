@@ -8,18 +8,32 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
 {
     /**
-     * عرض جميع طلبات المستخدم الحالي
+     * @OA\Get(
+     *      path="/api/orders",
+     *      tags={"Orders"},
+     *      summary="عرض طلبات المستخدم",
+     *      security={{"bearerAuth": {}}},
+     *      @OA\Parameter(name="Accept", in="header", required=true, @OA\Schema(type="string", default="application/json")),
+     *      @OA\Response(response=200, description="قائمة طلبات المستخدم")
+     * )
      */
     public function index(Request $request)
     {
-        $orders = Order::with('items.product')
-            ->where('customer_email', $request->user()->email)
-            ->latest()
-            ->get();
+        $userId = $request->user()->id;
+        $userEmail = $request->user()->email;
+        $cacheKey = "user_orders_{$userId}";
+
+        $orders = Cache::remember($cacheKey, 1800, function () use ($userEmail) {
+            return Order::with('items.product')
+                ->where('customer_email', $userEmail)
+                ->latest()
+                ->get();
+        });
 
         return response()->json([
             'status' => true,
@@ -29,7 +43,29 @@ class OrderController extends Controller
     }
 
     /**
-     * تحويل محتويات السلة إلى طلب جديد (Checkout)
+     * @OA\Post(
+     *      path="/api/orders",
+     *      tags={"Orders"},
+     *      summary="إنشاء طلب جديد من السلة",
+     *      security={{"bearerAuth": {}}},
+     *      @OA\Parameter(
+     *          name="Accept",
+     *          in="header",
+     *          required=true,
+     *          @OA\Schema(type="string", default="application/json")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"customer_name","customer_email","customer_phone","address"},
+     *              @OA\Property(property="customer_name", type="string", example="Shahd Sabbah"),
+     *              @OA\Property(property="customer_email", type="string", example="shahedsabbah@gmail.com"),
+     *              @OA\Property(property="customer_phone", type="string", example="0599123456"),
+     *              @OA\Property(property="address", type="string", example="Gaza, Palestine")
+     *          )
+     *      ),
+     *      @OA\Response(response=201, description="تم إنشاء الطلب بنجاح")
+     * )
      */
     public function store(Request $request)
     {
@@ -56,13 +92,13 @@ class OrderController extends Controller
         try {
             // إنشاء الطلب الرئيسي
             $order = Order::create([
-            'customer_name'  => $user->name,
-            'customer_email' => $user->email,
-            'customer_phone' => $request->customer_phone ?? $user->phone,
-            'address'        => $request->address,
-            'total_price'    => $totalAmount,
-            'status'         => 'pending',
-             ]);
+                'customer_name'  => $user->name,
+                'customer_email' => $user->email,
+                'customer_phone' => $request->customer_phone ?? $user->phone,
+                'address'        => $request->address,
+                'total_price'    => $totalAmount,
+                'status'         => 'pending',
+            ]);
 
             // تفريغ عناصر السلة ونقلها لجدول تفاصيل الطلب order_items
             foreach ($cartItems as $item) {
@@ -78,6 +114,10 @@ class OrderController extends Controller
             Cart::where('user_id', $user->id)->delete();
 
             DB::commit();
+
+            // تفريغ كاش الطلبات وكاش السلة معاً بعد نجاح إنشاء الطلب
+            Cache::forget("user_orders_{$user->id}");
+            Cache::forget("user_cart_{$user->id}");
 
             return response()->json([
                 'status' => true,

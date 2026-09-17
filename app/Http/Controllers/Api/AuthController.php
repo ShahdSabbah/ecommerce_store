@@ -10,7 +10,22 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     /**
-     * 1️⃣ تسجيل حساب جديد (Register)
+     * @OA\Post(
+     *      path="/api/register",
+     *      tags={"Authentication"},
+     *      summary="إنشاء حساب جديد",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"name","email","password","password_confirmation"},
+     *              @OA\Property(property="name", type="string", example="Ahmad Hassan"),
+     *              @OA\Property(property="email", type="string", example="ahmad@example.com"),
+     *              @OA\Property(property="password", type="string", example="password123"),
+     *              @OA\Property(property="password_confirmation", type="string", example="password123")
+     *          )
+     *      ),
+     *      @OA\Response(response=201, description="تم إنشاء الحساب بنجاح")
+     * )
      */
     public function register(Request $request)
     {
@@ -41,7 +56,20 @@ class AuthController extends Controller
     }
 
     /**
-     * 2️⃣ تسجيل الدخول (Login)
+     * @OA\Post(
+     *      path="/api/login",
+     *      tags={"Authentication"},
+     *      summary="تسجيل الدخول والحصول على Token",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(
+     *              required={"email","password"},
+     *              @OA\Property(property="email", type="string", example="ahmad@example.com"),
+     *              @OA\Property(property="password", type="string", example="password123")
+     *          )
+     *      ),
+     *      @OA\Response(response=200, description="تم تسجيل الدخول بنجاح")
+     * )
      */
     public function login(Request $request)
     {
@@ -68,18 +96,33 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
         ], 200);
     }
+/**
+ * @OA\Post(
+ *      path="/api/logout",
+ *      tags={"Authentication"},
+ *      summary="تسجيل الخروج",
+ *      security={{"bearerAuth": {}}},
+ *      @OA\Parameter(
+ *          name="Accept",
+ *          in="header",
+ *          required=true,
+ *          @OA\Schema(type="string", default="application/json")
+ *      ),
+ *      @OA\Response(response=200, description="تم تسجيل الخروج بنجاح"),
+ *      @OA\Response(response=401, description="غير مصرح")
+ * )
+ */
+public function logout(Request $request)
+{
+    $user = $request->user();
 
-    /**
-     * 3️⃣ تسجيل الخروج (Logout)
-     */
-    public function logout(Request $request)
-    {
-        // إلغاء وحذف الـ Token الحالي الذي استخدمه المستخدم لإرسال الطلب
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'تم تسجيل الخروج وإلغاء الـ Token بنجاح'
-        ], 200);
+    if ($user && method_exists($user->currentAccessToken(), 'delete')) {
+        $user->currentAccessToken()->delete();
     }
+
+    return response()->json([
+        'status'  => true,
+        'message' => 'تم تسجيل الخروج بنجاح'
+    ], 200);
+}
 }
