@@ -108,9 +108,10 @@ class PrivateDocumentController extends Controller
         }
 
         $fullPath = Storage::disk('private')->path($private_document->file_path);
+        $mimeType = $private_document->mime_type ?: (Storage::disk('private')->mimeType($private_document->file_path) ?: 'application/octet-stream');
 
         return response()->file($fullPath, [
-            'Content-Type' => $private_document->mime_type ?? 'application/octet-stream',
+            'Content-Type' => $mimeType,
         ]);
     }
 
@@ -135,7 +136,7 @@ class PrivateDocumentController extends Controller
      */
     public function destroy(PrivateDocument $private_document)
     {
-        // حذف الملف الفعلي إذا كان المسار موجدوهاً
+        // حذف الملف الفعلي إذا كان المسار موجوداً
         if (!empty($private_document->file_path) && Storage::disk('private')->exists($private_document->file_path)) {
             Storage::disk('private')->delete($private_document->file_path);
         }

@@ -138,7 +138,12 @@
                                          alt="{{ $doc->title }}" 
                                          class="w-100 h-100" 
                                          style="object-fit: cover;"
-                                         loading="lazy">
+                                         loading="lazy"
+                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                    <div class="text-center p-4 d-none">
+                                        <i class="bi bi-image text-muted fs-1"></i>
+                                        <div class="text-muted fw-bold small mt-1">تعذر تحميل المعاينة</div>
+                                    </div>
                                 @else
                                     <div class="text-center p-4">
                                         <i class="bi bi-file-earmark-pdf-fill text-danger fs-1"></i>
