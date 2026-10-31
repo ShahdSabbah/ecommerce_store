@@ -2,24 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    // 1. عرض جدول المنتجات
-    public function index()
+    // 1. عرض جدول المنتجات مع الكاش والـ Eager Loading
+    public function index(Request $request)
     {
-        $products = Product::with('category')->latest()->paginate(10);
+        $locale = app()->getLocale();
+        $page = (int) $request->get('page', 1);
+
+        $cacheKey = "products_web_lang_{$locale}_page_{$page}";
+
+        $products = Cache::remember($cacheKey, 3600, function () {
+            return Product::with('category')->latest()->paginate(10);
+        });
+
         return view('products.index', compact('products'));
     }
 
-    // 2. صفحة إضافة منتج
+    // 2. صفحة إضافة منتج (مع تخزين الفئات بالكاش)
     public function create()
     {
-        $categories = Category::all();
+        $locale = app()->getLocale();
+        $cacheKey = "categories_all_lang_{$locale}";
+
+        $categories = Cache::remember($cacheKey, 3600, function () {
+            return Category::all();
+        });
+
         return view('products.create', compact('categories'));
     }
 
@@ -42,15 +58,31 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
+        // الـ ProductObserver سيتولى مسح الكاش فور الإنشاء
         Product::create($data);
 
-        return redirect()->route('products.index')->with('success', 'تم إضافة المنتج بنجاح!');
+        // تسجيل الحركة في سجل النشاط
+        try {
+            ActivityLog::create([
+                'user_name' => auth()->user()->name ?? 'زائر',
+                'action'    => 'إضافة منتج',
+                'details'   => 'تم إضافة منتج جديد باسم: ' . $request->name,
+            ]);
+        } catch (\Exception $e) {}
+
+        return redirect()->route('products.index')->with('success', __('messages.product_created'));
     }
 
     // 4. صفحة تعديل المنتج
     public function edit(Product $product)
     {
-        $categories = Category::all();
+        $locale = app()->getLocale();
+        $cacheKey = "categories_all_lang_{$locale}";
+
+        $categories = Cache::remember($cacheKey, 3600, function () {
+            return Category::all();
+        });
+
         return view('products.edit', compact('product', 'categories'));
     }
 
@@ -76,9 +108,18 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
+        // الـ ProductObserver سيتولى مسح الكاش فور التعديل
         $product->update($data);
 
-        return redirect()->route('products.index')->with('success', 'تم تحديث المنتج بنجاح!');
+        try {
+            ActivityLog::create([
+                'user_name' => auth()->user()->name ?? 'زائر',
+                'action'    => 'تعديل منتج',
+                'details'   => 'تم تعديل المنتج: ' . $product->name,
+            ]);
+        } catch (\Exception $e) {}
+
+        return redirect()->route('products.index')->with('success', __('messages.product_updated'));
     }
 
     // 6. حذف المنتج
@@ -88,8 +129,9 @@ class ProductController extends Controller
             Storage::disk('public')->delete($product->image);
         }
 
+        // الـ ProductObserver سيتولى مسح الكاش فور الحذف
         $product->delete();
 
-        return redirect()->route('products.index')->with('success', 'تم حذف المنتج بنجاح!');
+        return redirect()->route('products.index')->with('success', __('messages.product_deleted'));
     }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'رفع وثيقة أو فاتورة خاصة - Super Admin')
+@section('title', __('messages.upload_document') . ' - Super Admin')
 
 @section('content')
 <div class="row justify-content-center">
@@ -9,12 +9,12 @@
             <div class="card-header py-5 border-bottom">
                 <div class="card-title">
                     <h3 class="fw-bolder m-0 text-dark">
-                        <i class="bi bi-cloud-arrow-up text-primary me-2"></i> رفع وثيقة أو فاتورة خاصة (Private Storage)
+                        <i class="bi bi-cloud-arrow-up text-primary me-2"></i> {{ __('messages.upload_document') }}
                     </h3>
                 </div>
                 <div>
                     <a href="{{ route('private-documents.index') }}" class="btn btn-sm btn-light fw-bold">
-                        <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
+                        {{ __('messages.back_to_list') }}
                     </a>
                 </div>
             </div>
@@ -25,7 +25,7 @@
                     <div class="d-flex align-items-center">
                         <i class="bi bi-info-circle-fill text-warning fs-3 me-3"></i>
                         <span class="fs-7 text-gray-700">
-                            سيتم تشفير وتخزين الملف المرفوع في مجلد محمي معزول، ولن يتمكن أي شخص من فتحه سوى <strong>Super Admin</strong>.
+                            {{ __('messages.private_storage_notice') }}
                         </span>
                     </div>
                 </div>
@@ -44,24 +44,24 @@
                     @csrf
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold required">عنوان الوثيقة أو الفاتورة</label>
-                        <input type="text" name="title" class="form-control" placeholder="مثال: هوية العميل أحمد / فاتورة توريد رقم #402" value="{{ old('title') }}" required>
+                        <label class="form-label fw-bold required">{{ __('messages.document_title') }}</label>
+                        <input type="text" name="title" class="form-control" placeholder="{{ __('messages.document_title') }}..." value="{{ old('title') }}" required>
                     </div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold required">نوع المستند</label>
+                            <label class="form-label fw-bold required">{{ __('messages.document_type') }}</label>
                             <select name="type" class="form-select" required>
-                                <option value="user_document" {{ old('type') === 'user_document' ? 'selected' : '' }}>وثيقة مستخدم (هوية، جواز سفر، عقد...)</option>
-                                <option value="private_invoice" {{ old('type') === 'private_invoice' ? 'selected' : '' }}>فاتورة خاصة (مشتريات، كشف حساب، إيصال...)</option>
-                                <option value="other" {{ old('type') === 'other' ? 'selected' : '' }}>مستند آخر</option>
+                                <option value="user_document" {{ old('type') === 'user_document' ? 'selected' : '' }}>{{ __('messages.type_user_document') }}</option>
+                                <option value="private_invoice" {{ old('type') === 'private_invoice' ? 'selected' : '' }}>{{ __('messages.type_private_invoice') }}</option>
+                                <option value="other" {{ old('type') === 'other' ? 'selected' : '' }}>{{ __('messages.type_other') }}</option>
                             </select>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">المستخدم التابع له المستند (اختياري)</label>
+                            <label class="form-label fw-bold">{{ __('messages.linked_user') }}</label>
                             <select name="user_id" class="form-select">
-                                <option value="">-- عام (بدون ربط بمستخدم) --</option>
+                                <option value="">-- {{ __('messages.unlinked_general') }} --</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} ({{ $user->email }})
@@ -72,22 +72,19 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold required">الملف أو الصورة</label>
+                        <label class="form-label fw-bold required">{{ __('messages.file_or_image') }}</label>
                         <input type="file" name="file" class="form-control" accept="image/*,application/pdf" required>
-                        <div class="form-text text-muted fs-8 mt-1">
-                            الصيغ المدعومة: صور (JPG, PNG, WEBP, GIF) أو ملفات PDF (الحد الأقصى للحجم: 10 ميغابايت).
-                        </div>
                     </div>
 
                     <div class="mb-5">
-                        <label class="form-label fw-bold">ملاحظات إضافية (اختياري)</label>
-                        <textarea name="notes" rows="3" class="form-control" placeholder="أي تفاصيل أو ملاحظات حول هذه الوثيقة...">{{ old('notes') }}</textarea>
+                        <label class="form-label fw-bold">{{ __('messages.notes') }}</label>
+                        <textarea name="notes" rows="3" class="form-control" placeholder="{{ __('messages.notes') }}...">{{ old('notes') }}</textarea>
                     </div>
 
                     <div class="d-flex justify-content-end gap-3 border-top pt-4">
-                        <a href="{{ route('private-documents.index') }}" class="btn btn-light fw-bold">إلغاء</a>
+                        <a href="{{ route('private-documents.index') }}" class="btn btn-light fw-bold">{{ __('messages.cancel') }}</a>
                         <button type="submit" class="btn btn-primary fw-bold px-6">
-                            <i class="bi bi-cloud-arrow-up-fill me-1"></i> رفع وحفظ المستند
+                            <i class="bi bi-cloud-arrow-up-fill me-1"></i> {{ __('messages.save') }}
                         </button>
                     </div>
                 </form>

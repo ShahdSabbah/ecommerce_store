@@ -8,6 +8,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PrivateDocumentController;
+use App\Http\Controllers\NotificationController;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
@@ -20,39 +21,32 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// 1. Redirect Root URL to stored or default locale (/ -> /ar)
-Route::get('/', function () {
-    $locale = session('locale', config('locale.default', 'ar'));
-    return redirect()->to('/' . $locale);
-})->name('locale.redirect');
-
-// 2. Localized Routes Group (كل المسارات العامة التي تتطلب لغة)
-Route::group([
-    'prefix' => '{locale}',
-    'where'  => ['locale' => 'ar|en'],
-    'middleware' => ['web'],
-], function () {
-
-    // الصفحة الرئيسية للمتجر
-    Route::get('/', function (Request $request, $locale) {
-        $categories = Category::select('id', 'name')->get()->unique('name');
-        $query = Product::with('category')->latest();
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-        $products = $query->get();
-        return view('welcome_store', compact('categories', 'products'));
-    })->name('home');
-
-    // مسارات المصادقة (Auth Routes: login, register, password, etc.)
-    if (file_exists(__DIR__ . '/auth.php')) {
-        require __DIR__ . '/auth.php';
+// 🌐 1. مسار تبديل اللغة وحفظها في الـ Cookie والـ Session
+Route::get('/lang/{locale}', function (Request $request, $locale) {
+    if (in_array($locale, ['ar', 'en'])) {
+        session()->put('locale', $locale);
+        session()->save();
+        cookie()->queue(cookie('locale', $locale, 60 * 24 * 365, null, null, false, false));
     }
-});
+    return redirect()->back();
+})->name('lang.switch');
 
-// 3. Global Static Routes (خارج نطاق البريفكس لتجنب تعارض 404)
 
-// Dashboard (Admin Only)
+// 🛍️ 2. الواجهة الرئيسية للمتجر (مع الفلترة والأقسام)
+Route::get('/', function (Request $request) {
+    $categories = Category::select('id', 'name')->get()->unique('name');
+
+    $query = Product::with('category')->latest();
+    if ($request->filled('category_id')) {
+        $query->where('category_id', $request->category_id);
+    }
+    $products = $query->get();
+
+    return view('welcome_store', compact('categories', 'products'));
+})->name('home');
+
+
+// 📊 3. مسار التوجيه بعد تسجيل الدخول (Dashboard)
 Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user && method_exists($user, 'isAdmin') && $user->isAdmin()) {
@@ -70,12 +64,12 @@ Route::get('/dashboard', function () {
             'totalSales'
         ));
     }
-    
-    $locale = session('locale', config('locale.default', 'ar'));
-    return redirect()->route('home', ['locale' => $locale]);
+
+    return redirect()->route('home');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Admin routes
+
+// 🛡️ 4. مسارات لوحة التحكم والإدارة (متاحة فقط للأدمن)
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
@@ -84,29 +78,38 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 });
 
-// Super admin routes
+
+// 👑 5. مسارات السوبر أدمن (متاحة حصرياً للسوبر أدمن)
 Route::middleware(['auth', 'super_admin'])->group(function () {
     Route::resource('users', UserController::class);
-
-    // استثناء show و edit و update من الـ resource لتجنب التضارب
-    Route::resource('private-documents', PrivateDocumentController::class)->except(['show', 'edit', 'update']);
-
-    // المسارات المخصصة للمعاينة والتحميل
+    Route::resource('private-documents', PrivateDocumentController::class)->except(['edit', 'update']);
     Route::get('private-documents/{private_document}/view', [PrivateDocumentController::class, 'show'])->name('private-documents.view');
     Route::get('private-documents/{private_document}/download', [PrivateDocumentController::class, 'download'])->name('private-documents.download');
 });
 
-// Profile & checkout routes (any authenticated user)
+
+// 👤 6. مسارات الملف الشخصي والشراء والإشعارات (متاحة لكل مستخدم مسجل دخوله)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    // 🔔 مسارات مركز الإشعارات
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
-// Cart routes
+
+// 🛒 7. مسارات سلة المشتريات
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
 Route::patch('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+
+
+// 🔑 8. مسارات المصادقة الجاهزة من Laravel Breeze
+require __DIR__ . '/auth.php';

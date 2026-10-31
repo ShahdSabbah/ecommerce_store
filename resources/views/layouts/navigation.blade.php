@@ -24,10 +24,12 @@
 
                 <!-- 🌐 زر تحويل اللغة للـ Tailwind -->
                 @if(app()->getLocale() == 'ar')
-<a href="{{ Str::replaceFirst('/ar', '/en', request()->getRequestUri()) }}" class="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary px-3 py-1 border border-gray-300 rounded-lg transition">{{ __('nav.toggle_english') }}</a>
+                    <a href="{{ route('lang.switch', 'en') }}" class="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary px-3 py-1 border border-gray-300 rounded-lg transition">
+                        🇬🇧 English
+                    </a>
                 @else
-                    <a href="{{ Str::replaceFirst('/en', '/ar', request()->getRequestUri()) }}" class="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary px-3 py-1 border border-gray-300 rounded-lg transition">
-                        عربي
+                    <a href="{{ route('lang.switch', 'ar') }}" class="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary px-3 py-1 border border-gray-300 rounded-lg transition">
+                        🇸🇦 العربية
                     </a>
                 @endif
 
@@ -149,6 +151,82 @@
 
             <!-- القائمة الخاصة بالمستخدم أو الزائر -->
             @auth
+                <!-- 🔔 جرس الإشعارات مع القائمة المنسدلة -->
+                <div class="dropdown" id="navNotificationDropdownContainer">
+                    <button class="btn btn-light rounded-circle p-2 position-relative border shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="الإشعارات" style="width: 38px; height: 38px;">
+                        <i class="bi bi-bell-fill text-dark fs-6"></i>
+                        @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
+                        <span id="navUnreadNotificationsBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {{ $unreadCount > 0 ? '' : 'd-none' }}" style="font-size: 10px;">
+                            {{ $unreadCount }}
+                        </span>
+                    </button>
+                    
+                    <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-0" style="width: 340px; max-width: 90vw;">
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light rounded-top-4">
+                            <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                                <i class="bi bi-bell-fill text-primary"></i> الإشعارات
+                            </h6>
+                            @if($unreadCount > 0)
+                                <form action="{{ route('notifications.markAllRead') }}" method="POST" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 12px;">
+                                        تعليم الكل كمقروء
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
+                        <div class="overflow-auto" style="max-height: 320px;" id="navNotificationsDropdownList">
+                            @forelse(auth()->user()->notifications->take(6) as $notification)
+                                @php
+                                    $isUnread = is_null($notification->read_at);
+                                    $data = $notification->data;
+                                    $msg = $data['message'] ?? 'إشعار جديد';
+                                    
+                                    $icon = 'bi-bell-fill text-primary';
+                                    if (str_contains($notification->type, 'OutOfStock')) {
+                                        $icon = 'bi-exclamation-triangle-fill text-danger';
+                                    } elseif (str_contains($notification->type, 'OrderStatus')) {
+                                        $icon = 'bi-arrow-repeat text-warning';
+                                    } elseif (str_contains($notification->type, 'OrderPlaced')) {
+                                        $icon = 'bi-bag-check-fill text-success';
+                                    }
+                                @endphp
+
+                                <a href="{{ route('notifications.read', $notification->id) }}" class="d-block p-3 border-bottom text-decoration-none transition-all {{ $isUnread ? 'bg-light bg-opacity-50' : '' }}" style="border-color: #f1f1f4 !important;">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <div class="mt-1">
+                                            <i class="bi {{ $icon }} fs-6"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 text-dark {{ $isUnread ? 'fw-bold' : '' }}" style="font-size: 13px; line-height: 1.4;">
+                                                {{ $msg }}
+                                            </p>
+                                            <span class="text-muted" style="font-size: 11px;">
+                                                <i class="bi bi-clock me-1"></i> {{ $notification->created_at->diffForHumans() }}
+                                            </span>
+                                        </div>
+                                        @if($isUnread)
+                                            <span class="badge rounded-circle bg-primary p-1 mt-1"></span>
+                                        @endif
+                                    </div>
+                                </a>
+                            @empty
+                                <div class="text-center py-4 text-muted" id="navNoNotificationsPlaceholder">
+                                    <i class="bi bi-bell-slash fs-3 d-block mb-1 opacity-50"></i>
+                                    <span style="font-size: 13px;">لا توجد إشعارات حالياً</span>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        <div class="p-2 border-top text-center bg-light rounded-bottom-4">
+                            <a href="{{ route('notifications.index') }}" class="btn btn-link btn-sm text-decoration-none text-primary fw-bold" style="font-size: 13px;">
+                                عرض جميع الإشعارات <i class="bi bi-arrow-left ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="dropdown">
                     <button class="btn btn-light rounded-pill dropdown-toggle px-3 border fw-bold" type="button" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle text-primary me-1"></i> {{ auth()->user()->name }}

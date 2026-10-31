@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Cache;
 class CartController extends Controller
 {
     /**
-     *  عرض محتويات سلة المستخدم الحالي
+     * عرض محتويات سلة المستخدم الحالي
      */
     public function index(Request $request)
     {
         $userId = $request->user()->id;
         $cacheKey = "user_cart_{$userId}";
 
+        // جلب البيانات من الكاش أو الاستعلام من DB وتخزينها
         $cartItems = Cache::remember($cacheKey, 600, function () use ($userId) {
             return Cart::with('product')
                 ->where('user_id', $userId)
@@ -73,17 +74,14 @@ class CartController extends Controller
             ->first();
 
         if ($cartItem) {
-            $cartItem->increment('quantity', $quantity);
+            $cartItem->increment('quantity', $quantity); // الـ Observer سينصت لحدث التحديث
         } else {
-            $cartItem = Cart::create([
+            $cartItem = Cart::create([                   // الـ Observer سينصت لحدث الإنشاء
                 'user_id' => $userId,
                 'product_id' => $request->product_id,
                 'quantity' => $quantity,
             ]);
         }
-
-        // تفريغ كاش السلة للمستخدم بعد التعديل
-        Cache::forget("user_cart_{$userId}");
 
         return response()->json([
             'status' => true,
@@ -93,7 +91,7 @@ class CartController extends Controller
     }
 
     /**
-     *  حذف عنصر من السلة
+     * حذف عنصر من السلة
      */
     public function destroy(Request $request, $id)
     {
@@ -110,10 +108,7 @@ class CartController extends Controller
             ], 404);
         }
 
-        $cartItem->delete();
-
-        // تفريغ كاش السلة للمستخدم بعد الحذف
-        Cache::forget("user_cart_{$userId}");
+        $cartItem->delete(); // الـ Observer ينصت لحدث الحذف ويمسح الكاش تلقائياً
 
         return response()->json([
             'status' => true,

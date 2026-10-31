@@ -4,24 +4,35 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
 
 class SetLocale
 {
+    /**
+     * Handle an incoming request.
+     */
     public function handle(Request $request, Closure $next)
     {
-        $locale = $request->segment(1);
+        // 1. الأولوية للجلسة session، ثم الكوكي cookie، ثم الافتراضي
+        $locale = $request->session()->get('locale') 
+               ?? $request->cookie('locale') 
+               ?? config('app.locale', 'ar');
 
-        if (in_array($locale, config('locale.available_locales', ['ar', 'en']))) {
-            app()->setLocale($locale);
-            session(['locale' => $locale]);
-        } else {
-            $locale = session('locale', config('locale.default', 'ar'));
-            app()->setLocale($locale);
+        // 2. التأكد من أن اللغة مدعومة
+        if (!in_array($locale, ['ar', 'en'])) {
+            $locale = 'ar';
         }
 
-        // يمرر لغة النظام افتراضياً لكافة الـ routes التي تطلب {locale}
-        URL::defaults(['locale' => $locale]);
+        // 3. ضبط لغة التطبيق الحالية
+        app()->setLocale($locale);
+
+        // 4. مزامنة الجلسة إن لم تكن مضبوطة
+        if ($request->session()->get('locale') !== $locale) {
+            $request->session()->put('locale', $locale);
+        }
+
+        // 5. مشاركة متغيرات اللغة والاتجاه مع كافة قوالب Blade
+        view()->share('current_locale', $locale);
+        view()->share('dir', $locale === 'ar' ? 'rtl' : 'ltr');
 
         return $next($request);
     }

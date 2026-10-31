@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CartController extends Controller
 {
-    // عرض صفحة السلة
+    // عرض صفحة السلة من الـ Session مباشرة
     public function index()
     {
         $cart = session()->get('cart', []);
@@ -17,7 +18,17 @@ class CartController extends Controller
     // إضافة منتج للسلة
     public function add(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $locale = app()->getLocale();
+
+        // استخدام Cache لجلب تفاصيل المنتج وتخفيف الضغط على قاعدة البيانات
+        $product = Cache::remember("product_detail_{$id}_lang_{$locale}", 3600, function () use ($id) {
+            return Product::find($id);
+        });
+
+        if (!$product) {
+            return redirect()->back()->with('error', __('messages.product_not_found'));
+        }
+
         $cart = session()->get('cart', []);
         $quantity = (int) $request->input('quantity', 1);
 
@@ -25,7 +36,7 @@ class CartController extends Controller
         if (isset($cart[$id])) {
             $cart[$id]['quantity'] += $quantity;
         } else {
-            // إضافة منتج جديد
+            // إضافة منتج جديد مع الاسم المترجم
             $cart[$id] = [
                 "name"     => $product->name,
                 "quantity" => $quantity,
@@ -35,9 +46,9 @@ class CartController extends Controller
         }
 
         session()->put('cart', $cart);
-        session()->save(); // حفظ مباشر للجلسة لتفادي الفقدان عند الـ Redirect
+        session()->save();
 
-        return redirect()->back()->with('success', 'تمت إضافة المنتج للسلة بنجاح!');
+        return redirect()->back()->with('success', __('messages.product_added_to_cart'));
     }
 
     // حذف منتج من السلة
@@ -51,15 +62,16 @@ class CartController extends Controller
             session()->save();
         }
 
-        return redirect()->back()->with('success', 'تم حذف المنتج من السلة!');
+        return redirect()->back()->with('success', __('messages.item_removed_from_cart'));
     }
+
     // تحديث كمية منتج في السلة
     public function update(Request $request, $id)
     {
         $cart = session()->get('cart', []);
 
         if (isset($cart[$id])) {
-            $type = $request->input('type'); // 'increase' أو 'decrease'
+            $type = $request->input('type');
 
             if ($type === 'increase') {
                 $cart[$id]['quantity']++;
@@ -71,6 +83,6 @@ class CartController extends Controller
             session()->save();
         }
 
-        return redirect()->back();
+        return redirect()->back()->with('success', __('messages.cart_updated'));
     }
 }

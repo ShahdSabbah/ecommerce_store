@@ -14,7 +14,6 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // استعلام المستخدمين مع الفلترة والبحث
         $query = User::latest();
 
         if ($request->filled('search')) {
@@ -35,7 +34,6 @@ class UserController extends Controller
 
         $users = $query->paginate(10)->withQueryString();
 
-        // إحصائيات سريعة للبطاقات العلوية
         $totalUsers       = User::count();
         $totalAdmins      = User::where('role', 'admin')->count();
         $totalSuperAdmins = User::where('is_super_admin', true)->count();
@@ -81,7 +79,7 @@ class UserController extends Controller
             'is_super_admin' => $isSuperAdmin,
         ]);
 
-        return redirect()->route('users.index')->with('success', 'تم إنشاء المستخدم بنجاح!');
+        return redirect()->route('users.index')->with('success', __('messages.user_created'));
     }
 
     /**
@@ -107,9 +105,8 @@ class UserController extends Controller
 
         $newIsSuperAdmin = $request->boolean('is_super_admin');
 
-        // حماية: منع السوبر أدمن من إزالة صلاحية السوبر أدمن عن حسابه الحالي
         if (auth()->id() === $user->id && !$newIsSuperAdmin) {
-            return redirect()->back()->with('error', 'إجراء مرفوض: لا يمكنك إلغاء صلاحية السوبر أدمن عن حسابك الحالي!');
+            return redirect()->back()->with('error', __('messages.cannot_remove_self'));
         }
 
         $user->name = $request->name;
@@ -117,14 +114,13 @@ class UserController extends Controller
         $user->role = $newIsSuperAdmin ? 'admin' : $request->role;
         $user->is_super_admin = $newIsSuperAdmin;
 
-        // تحديث كلمة المرور إن كُتبت
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
 
         $user->save();
 
-        return redirect()->route('users.index')->with('success', 'تم تحديث بيانات المستخدم وصلاحياته بنجاح!');
+        return redirect()->route('users.index')->with('success', __('messages.user_updated'));
     }
 
     /**
@@ -132,13 +128,12 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        // حماية: منع المستخدم من حذف حسابه الحالي
         if (auth()->id() === $user->id) {
-            return redirect()->back()->with('error', 'إجراء مرفوض: لا يمكنك حذف حسابك الشخصي!');
+            return redirect()->back()->with('error', __('messages.cannot_delete_self'));
         }
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'تم حذف المستخدم بنجاح!');
+        return redirect()->route('users.index')->with('success', __('messages.user_deleted'));
     }
 }

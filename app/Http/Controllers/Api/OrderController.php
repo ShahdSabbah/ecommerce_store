@@ -7,8 +7,8 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -26,9 +26,12 @@ class OrderController extends Controller
     {
         $userId = $request->user()->id;
         $userEmail = $request->user()->email;
+
+        // مفتاح كاش فريد لكل مستخدم
         $cacheKey = "user_orders_{$userId}";
 
-        $orders = Cache::remember($cacheKey, 1800, function () use ($userEmail) {
+        // تخزين الطلبات مؤقتاً في الكاش لمدة ساعة (3600 ثانية)
+        $orders = Cache::remember($cacheKey, 3600, function () use ($userEmail) {
             return Order::with('items.product')
                 ->where('customer_email', $userEmail)
                 ->latest()
@@ -90,7 +93,7 @@ class OrderController extends Controller
         DB::beginTransaction();
 
         try {
-            // إنشاء الطلب الرئيسي
+            // إنشاء الطلب الرئيسي (الـ OrderObserver سينظف كاش طلبات المستخدم آلياً)
             $order = Order::create([
                 'customer_name'  => $user->name,
                 'customer_email' => $user->email,
@@ -102,22 +105,19 @@ class OrderController extends Controller
 
             // تفريغ عناصر السلة ونقلها لجدول تفاصيل الطلب order_items
             foreach ($cartItems as $item) {
+                // الـ OrderItemObserver يخصم المخزون تلقائياً عند الإنشآء
                 OrderItem::create([
-                    'order_id' => $order->id,
+                    'order_id'   => $order->id,
                     'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'price' => $item->product->price,
+                    'quantity'   => $item->quantity,
+                    'price'      => $item->product->price,
                 ]);
             }
 
-            // إفراغ سلة التسوق للمستخدم بعد نجاح العملية
+            // إفراغ سلة التسوق للمستخدم (الـ CartObserver ينظف كاش السلة تلقائياً)
             Cart::where('user_id', $user->id)->delete();
 
             DB::commit();
-
-            // تفريغ كاش الطلبات وكاش السلة معاً بعد نجاح إنشاء الطلب
-            Cache::forget("user_orders_{$user->id}");
-            Cache::forget("user_cart_{$user->id}");
 
             return response()->json([
                 'status' => true,

@@ -22,8 +22,10 @@ class CategoryController extends Controller
         $locale = request()->header('Accept-Language', 'ar');
         app()->setLocale($locale);
 
-        $cacheKey = "categories_lang_{$locale}";
+        // مفتاح الكاش مع مراعاة اللغة
+        $cacheKey = "categories_all_lang_{$locale}";
 
+        // حفظ الأقسام في الكاش لمدة 24 ساعة (86400 ثانية) لأن الأقسام لا تتغير كثيراً
         $categories = Cache::remember($cacheKey, 86400, function () use ($locale) {
             $cats = Category::all();
 
@@ -44,9 +46,9 @@ class CategoryController extends Controller
         });
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'تم جلب الأقسام بنجاح',
-            'data' => $categories
+            'data'    => $categories
         ], 200);
     }
 
@@ -64,11 +66,15 @@ class CategoryController extends Controller
         $locale = request()->header('Accept-Language', 'ar');
         app()->setLocale($locale);
 
-        $cacheKey = "category_{$id}_lang_{$locale}";
+        // مفتاح كاش فريد لكل قسم ولغة
+        $cacheKey = "category_detail_{$id}_lang_{$locale}";
 
         $category = Cache::remember($cacheKey, 86400, function () use ($id, $locale) {
             $cat = Category::with('products')->find($id);
-            if (!$cat) return null;
+
+            if (!$cat) {
+                return null;
+            }
 
             $translations = $cat->getTranslations('name');
             $name = $cat->getTranslation('name', $locale, false);
@@ -87,15 +93,15 @@ class CategoryController extends Controller
 
         if (!$category) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'القسم غير موجود'
             ], 404);
         }
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'تم جلب بيانات القسم مع منتجاته بنجاح',
-            'data' => $category
+            'data'    => $category
         ], 200);
     }
 }

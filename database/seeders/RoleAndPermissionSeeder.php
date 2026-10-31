@@ -24,6 +24,7 @@ class RoleAndPermissionSeeder extends Seeder
             'delete-products',
             'view-orders',
             'manage-users',
+            'manage-categories'
         ];
 
         foreach ($permissions as $permission) {
@@ -42,7 +43,14 @@ class RoleAndPermissionSeeder extends Seeder
             'view-orders',
         ]);
 
-        // ج. دور الزبون العادي
+        // ج. إنشاء دور مدير التصنيفات وإعطاؤه الصلاحيات المناسبة
+        $categoryManagerRole = Role::firstOrCreate(['name' => 'category-manager']);
+        $categoryManagerRole->syncPermissions([
+            'manage-categories',
+            'manage-products',
+        ]);
+
+        // د. دور الزبون العادي
         $customerRole = Role::firstOrCreate(['name' => 'customer']);
 
         // 4. تعيين الأدوار للمستخدمين الموجودين حالياً
@@ -62,6 +70,11 @@ class RoleAndPermissionSeeder extends Seeder
         $user3 = User::find(3);
         if ($user3) {
             $user3->assignRole('admin');
+        }
+        //  المستخدم رقم 4 تعيين دور category-manager له
+        $user4 = User::find(4);
+        if ($user4) {
+            $user4->assignRole('category-manager');
         }
     }
 }

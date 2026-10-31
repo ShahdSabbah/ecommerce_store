@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Events\OrderPlaced;
 use App\Models\OrderItem;
+use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
@@ -12,12 +15,10 @@ class CheckoutController extends Controller
     {
         $cart = session()->get('cart', []);
 
-        // شرط الأمان Defensive Check: منع الدخول إذا كانت السلة فارغة
         if (empty($cart)) {
-            return redirect()->route('cart.index')->with('error', 'سلتك فارغة! أضف بعض المنتجات أولاً.');
+            return redirect()->route('cart.index')->with('error', __('messages.cart_empty_msg'));
         }
 
-        // حساب المجموع الكلي لتمريره للواجهة
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
@@ -26,50 +27,55 @@ class CheckoutController extends Controller
         return view('checkout', compact('cart', 'total'));
     }
 
-    // معالجة الطلب والحفظ (سنكتبها في الخطوة القادمة)
+    // معالجة الطلب والحفظ
     public function store(Request $request)
     {
         $cart = session()->get('cart', []);
 
         if (empty($cart)) {
-            return redirect()->route('cart.index')->with('error', 'سلتك فارغة!');
+            return redirect()->route('cart.index')->with('error', __('messages.cart_empty'));
         }
 
-        // 1. Validation للبيانات القادمة من الـ Form
         $request->validate([
             'phone'            => 'required|string|max:20',
             'shipping_address' => 'required|string|max:500',
         ]);
 
-        // 2. حساب المجموع الكلي
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
 
-        // 3. إنشاء السجل الرئيسي في جدول orders
+        // إرجاع المتغير مباشرة من الـ Transaction لتجنب خطأ الـ Undefined Variable
+        $order = DB::transaction(function () use ($request, $cart, $total) {
+            
             $order = Order::create([
-            'customer_name'  => auth()->user()->name,
-            'customer_email' => auth()->user()->email,
-            'customer_phone' => $request->phone,            // 👈 مطابقة لـ customer_phone
-            'address'        => $request->shipping_address, // 👈 مطابقة لـ address
-            'total_price'    => $total,
-            'status'         => 'pending',
-        ]);
-
-        // 4. نقل عناصر السلة إلى جدول order_items
-        foreach ($cart as $productId => $details) {
-            OrderItem::create([
-                'order_id'   => $order->id, // ربط العنصر برقم الفاتورة المُنصأة أعلاه
-                'product_id' => $productId,
-                'quantity'   => $details['quantity'],
-                'price'      => $details['price'], // تثبيت سعر القطعة لحظة الشراء
+                'customer_name'  => auth()->user()->name,
+                'customer_email' => auth()->user()->email,
+                'customer_phone' => $request->phone,
+                'address'        => $request->shipping_address,
+                'total_price'    => $total,
+                'status'         => 'pending',
             ]);
-        }
 
-        // 5. مسح السلة من الـ Session بعد نجاح العملية
+            foreach ($cart as $productId => $details) {
+                OrderItem::create([
+                    'order_id'   => $order->id,
+                    'product_id' => $productId,
+                    'quantity'   => $details['quantity'],
+                    'price'      => $details['price'],
+                ]);
+            }
+
+            return $order;
+        });
+        //  2. هنا موضع الـ Event الرئيسي!
+        // تم إنشاء الطلب والـ Items بنجاح، نطلق حدث "OrderPlaced"
+        OrderPlaced::dispatch($order);
+
+        // مسح السلة من الجلسة بعد نجاح العملية
         session()->forget('cart');
 
-        return redirect()->route('home')->with('success', 'تم تسجيل طلبك بنجاح! رقم الطلب: #' . $order->id);
+        return redirect()->route('home')->with('success', __('messages.order_success') . $order->id);
     }
 }

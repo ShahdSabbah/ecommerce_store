@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-use Illuminate\Support\Facades\Cache;
+
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -14,13 +15,27 @@ class ProductController extends Controller
      *      operationId="getProductsList",
      *      tags={"Products"},
      *      summary="عرض جميع المنتجات",
-     *      description="يرجع قائمة بكل المنتجات المتاحة في المتجر",
+     *      description="يرجع قائمة بكل المنتجات المتاحة في المتجر مع التصفح والكاش",
      *      @OA\Parameter(
      *          name="Accept-Language",
      *          in="header",
      *          required=false,
      *          description="لغة الاستجابة (ar أو en)",
      *          @OA\Schema(type="string", default="ar")
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          required=false,
+     *          description="رقم الصفحة",
+     *          @OA\Schema(type="integer", default=1)
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          required=false,
+     *          description="عدد العناصر في الصفحة",
+     *          @OA\Schema(type="integer", default=10)
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -29,53 +44,36 @@ class ProductController extends Controller
      * )
      */
     public function index(Request $request)
-{
-    $locale = $request->header('Accept-Language', 'ar');
-    app()->setLocale($locale);
+    {
+        // 1. تحديد اللغة وتطبيقها
+        $locale = $request->header('Accept-Language', config('app.locale', 'ar'));
+        app()->setLocale($locale);
 
-    $perPage = $request->get('per_page', 10);
-    $page = $request->get('page', 1);
+        // 2. معالجة قيم الـ Pagination
+        $perPage = (int) $request->get('per_page', 10);
+        $page = (int) $request->get('page', 1);
 
-    $cacheKey = "products_lang_{$locale}_page_{$page}_per_{$perPage}";
+        // 3. مفتاح الكاش الفريد لكل لغة وصفحة
+        $cacheKey = "products_lang_{$locale}_page_{$page}_per_{$perPage}";
 
-    $products = Cache::remember($cacheKey, 3600, function () use ($perPage, $locale) {
-        $p = Product::latest()->paginate($perPage);
+        // 4. استرجاع أو تخزين البيانات
+        $products = Cache::remember($cacheKey, 3600, function () use ($perPage, $locale) {
+            $p = Product::latest()->paginate($perPage);
 
-        $p->getCollection()->transform(function ($product) use ($locale) {
-            $translationsName = $product->getTranslations('name');
-            $name = $product->getTranslation('name', $locale, false);
-            if (empty($name)) {
-                $name = $product->getTranslation('name', 'en', false) ?? (is_array($translationsName) ? reset($translationsName) : '');
-            }
+            // تحويل واستخراج الترجمات المناسبة للـ Collections
+            $p->getCollection()->transform(function ($product) use ($locale) {
+                return $this->formatProduct($product, $locale);
+            });
 
-            $translationsDesc = $product->getTranslations('description');
-            $description = $product->getTranslation('description', $locale, false);
-            if (empty($description)) {
-                $description = $product->getTranslation('description', 'en', false) ?? (is_array($translationsDesc) ? reset($translationsDesc) : '');
-            }
-
-            return [
-                'id'          => $product->id,
-                'category_id' => $product->category_id,
-                'name'        => $name ?: '',
-                'description' => $description ?: '',
-                'price'       => $product->price,
-                'stock'       => $product->stock,
-                'image'       => $product->image,
-                'created_at'  => $product->created_at,
-                'updated_at'  => $product->updated_at,
-            ];
+            return $p;
         });
 
-        return $p;
-    });
-
-    return response()->json([
-        'status'  => true,
-        'message' => 'تم جلب المنتجات بنجاح',
-        'data'    => $products
-    ], 200);
-}
+        return response()->json([
+            'status'  => true,
+            'message' => 'تم جلب المنتجات بنجاح',
+            'data'    => $products
+        ], 200);
+    }
 
     /**
      * @OA\Get(
@@ -86,7 +84,7 @@ class ProductController extends Controller
      *          name="id",
      *          in="path",
      *          required=true,
-     *          @OA\Schema(type="integer", example=61)
+     *          @OA\Schema(type="integer", example=1)
      *      ),
      *      @OA\Parameter(
      *          name="Accept-Language",
@@ -98,36 +96,68 @@ class ProductController extends Controller
      *      @OA\Response(response=404, description="المنتج غير موجود")
      * )
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $locale = request()->header('Accept-Language', 'ar');
+        $locale = $request->header('Accept-Language', config('app.locale', 'ar'));
         app()->setLocale($locale);
 
-        $product = Product::find($id);
+        $cacheKey = "product_detail_{$id}_lang_{$locale}";
 
-        if (!$product) {
+        $formattedProduct = Cache::remember($cacheKey, 3600, function () use ($id, $locale) {
+            $product = Product::find($id);
+
+            if (!$product) {
+                return null;
+            }
+
+            return $this->formatProduct($product, $locale);
+        });
+
+        if (!$formattedProduct) {
             return response()->json([
                 'status'  => false,
                 'message' => 'المنتج غير موجود'
             ], 404);
         }
 
-        $formattedProduct = [
+        return response()->json([
+            'status'  => true,
+            'message' => 'تم جلب تفاصيل المنتج بنجاح',
+            'data'    => $formattedProduct
+        ], 200);
+    }
+
+    /**
+     * دالة مساعدة لتنسيق وتجهيز بيانات المنتج والترجمات مع الـ Fallback
+     */
+    private function formatProduct(Product $product, string $locale): array
+    {
+        // معالجة ترجمة الاسم مع الخيار البديل (Fallback)
+        $translationsName = $product->getTranslations('name');
+        $name = $product->getTranslation('name', $locale, false);
+        if (empty($name)) {
+            $name = $product->getTranslation('name', 'en', false) 
+                ?? (is_array($translationsName) && !empty($translationsName) ? reset($translationsName) : '');
+        }
+
+        // معالجة ترجمة الوصف مع الخيار البديل (Fallback)
+        $translationsDesc = $product->getTranslations('description');
+        $description = $product->getTranslation('description', $locale, false);
+        if (empty($description)) {
+            $description = $product->getTranslation('description', 'en', false) 
+                ?? (is_array($translationsDesc) && !empty($translationsDesc) ? reset($translationsDesc) : '');
+        }
+
+        return [
             'id'          => $product->id,
             'category_id' => $product->category_id,
-            'name'        => $product->name,
-            'description' => $product->description,
+            'name'        => $name ?: '',
+            'description' => $description ?: '',
             'price'       => $product->price,
             'stock'       => $product->stock,
             'image'       => $product->image,
             'created_at'  => $product->created_at,
             'updated_at'  => $product->updated_at,
         ];
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'تم جلب تفاصيل المنتج بنجاح',
-            'data'    => $formattedProduct
-        ], 200);
     }
 }
