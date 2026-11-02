@@ -22,7 +22,7 @@ class Product extends Model
             return asset('storage/' . $this->image);
         }
 
-        $categoryName = $this->category?->name ?? '';
+        $categoryName = $this->category?->getRawOriginal('name') ?? $this->category?->name ?? '';
 
         $placeholders = [
             'إلكترونيات' => [
