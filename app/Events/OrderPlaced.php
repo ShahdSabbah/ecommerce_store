@@ -30,10 +30,9 @@ class OrderPlaced implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        /*return [
+        return [
             new Channel('orders'),
-        ];*/
-        return [ new PrivateChannel('orders.' . $this->order->user_id) ];
+        ];
     }
 
     /**
