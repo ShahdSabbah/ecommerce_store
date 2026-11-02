@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
-    <!-- خط Tajawal الأنيق -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <title>{{ __('messages.login_title') }} | {{ config('app.name', 'Store') }}</title>
+    <!-- خطوط عربية ولاتينية حسب اللغة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -13,7 +14,7 @@
 
     <style>
     body {
-        font-family: 'Tajawal', sans-serif;
+        font-family: {{ app()->getLocale() === 'ar' ? "'Tajawal', sans-serif" : "'Inter', system-ui, sans-serif" }};
         background: radial-gradient(circle at 10% 20%, rgba(238, 242, 255, 0.8) 0%, rgba(245, 247, 250, 0.9) 90%);
         background-color: #f8fafc;
         min-height: 100vh;
@@ -21,7 +22,6 @@
         overflow-x: hidden;
     }
 
-    /* لمسة توهج ناعم بالخلفية */
     body::before {
         content: '';
         position: absolute;
@@ -98,22 +98,32 @@
         font-size: 26px;
         box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.1);
     }
-</style>
+    </style>
 </head>
 <body class="d-flex align-items-center justify-content-center p-3">
 
-    <div class="login-card p-4 p-md-5" style="max-width: 440px; width: 100%;">
+    <!-- زر تبديل اللغة الأنيق والعودة للمتجر -->
+    <div class="position-absolute top-0 {{ app()->getLocale() === 'ar' ? 'start-0' : 'end-0' }} p-3 d-flex gap-2">
+        <a href="{{ route('home') }}" class="btn btn-sm btn-light border shadow-sm rounded-pill px-3 py-1 fw-bold text-secondary text-decoration-none">
+            <i class="bi bi-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i> {{ __('messages.home') }}
+        </a>
+        <a href="{{ route('lang.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="btn btn-sm btn-light border shadow-sm rounded-pill px-3 py-1 fw-bold text-dark text-decoration-none">
+            {{ app()->getLocale() === 'ar' ? '🇬🇧 English' : '🇸🇦 عربي' }}
+        </a>
+    </div>
+
+    <div class="login-card p-4 p-md-5 my-5" style="max-width: 440px; width: 100%;">
         
         <div class="text-center mb-4">
             <div class="icon-box mb-3">
                 <i class="bi bi-person-lock"></i>
             </div>
-            <h3 class="fw-extrabold text-dark mb-1">تسجيل الدخول</h3>
-            <p class="text-secondary fs-6">مرحباً بعودتك! أدخل بياناتك للمتابعة</p>
+            <h3 class="fw-extrabold text-dark mb-1">{{ __('messages.login_title') }}</h3>
+            <p class="text-secondary fs-6">{{ __('messages.login_subtitle') }}</p>
         </div>
 
         <!-- عرض رسائل الأخطاء إن وجدت -->
-        @if ($errors->any())
+        @if (isset($errors) && $errors->any())
             <div class="alert alert-danger border-0 rounded-3 mb-4">
                 <ul class="mb-0 ps-3 fs-6">
                     @foreach ($errors->all() as $error)
@@ -128,36 +138,36 @@
 
             <!-- البريد الإلكتروني -->
             <div class="mb-3">
-                <label for="email" class="form-label text-dark fw-bold small">البريد الإلكتروني</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" class="form-control" placeholder="example@mail.com">
+                <label for="email" class="form-label text-dark fw-bold small">{{ __('messages.email') }}</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" class="form-control" placeholder="{{ __('messages.email_placeholder') }}">
             </div>
 
             <!-- كلمة المرور -->
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <label for="password" class="form-label text-dark fw-bold small mb-0">كلمة المرور</label>
+                    <label for="password" class="form-label text-dark fw-bold small mb-0">{{ __('messages.password') }}</label>
                     @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="text-primary text-decoration-none small">نسيت كلمة المرور؟</a>
+                        <a href="{{ route('password.request') }}" class="text-primary text-decoration-none small">{{ __('messages.forgot_password') }}</a>
                     @endif
                 </div>
-                <input id="password" type="password" name="password" required autocomplete="current-password" class="form-control" placeholder="••••••••">
+                <input id="password" type="password" name="password" required autocomplete="current-password" class="form-control" placeholder="{{ __('messages.password_placeholder') }}">
             </div>
 
             <!-- تذكرني -->
             <div class="form-check mb-4">
                 <input id="remember_me" type="checkbox" class="form-check-input" name="remember">
-                <label for="remember_me" class="form-check-label text-muted small">تذكرني على هذا الجهاز</label>
+                <label for="remember_me" class="form-check-label text-muted small">{{ __('messages.remember_me') }}</label>
             </div>
 
             <!-- زر الدخول -->
             <button type="submit" class="btn btn-custom-primary w-100 mb-4">
-                دخول
+                {{ __('messages.login_button') }}
             </button>
 
             <!-- رابط إنشـاء حساب -->
             <div class="text-center">
-                <span class="text-muted small">ليس لديك حساب؟</span>
-                <a href="{{ route('register') }}" class="text-primary fw-bold text-decoration-none small ms-1">سجل حساب جديد الآن</a>
+                <span class="text-muted small">{{ __('messages.dont_have_account') }}</span>
+                <a href="{{ route('register') }}" class="text-primary fw-bold text-decoration-none small ms-1">{{ __('messages.register_now') }}</a>
             </div>
         </form>
 

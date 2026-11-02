@@ -58,13 +58,12 @@
                                     <tr>
                                         <td class="px-4">
                                             <div class="d-flex align-items-center gap-3">
-                                                @if(!empty($details['image']))
-                                                    <img src="{{ asset('storage/' . $details['image']) }}" alt="{{ $details['name'] }}" class="border">
-                                                @else
-                                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-muted border" style="width:65px; height:65px;">
-                                                        <i class="bi bi-image fs-3"></i>
-                                                    </div>
-                                                @endif
+                                                @php
+                                                    $itemImg = !empty($details['image']) 
+                                                        ? (\Illuminate\Support\Str::startsWith($details['image'], 'http') ? $details['image'] : asset('storage/' . $details['image']))
+                                                        : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&auto=format&fit=crop&q=80';
+                                                @endphp
+                                                <img src="{{ $itemImg }}" alt="{{ $details['name'] }}" class="border rounded-3 object-fit-cover shadow-sm" style="width:65px; height:65px;">
                                                 <div>
                                                     <span class="fw-bold text-dark fs-6 d-block">{{ $details['name'] }}</span>
                                                 </div>

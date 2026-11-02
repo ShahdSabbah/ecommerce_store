@@ -35,11 +35,7 @@
                     @forelse($products as $product)
                     <tr>
                         <td>
-                            @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" width="50" height="50" class="rounded object-fit-cover shadow-sm border" alt="{{ $product->name }}">
-                            @else
-                                <span class="badge bg-light text-muted border">-</span>
-                            @endif
+                            <img src="{{ $product->image_url }}" width="50" height="50" class="rounded object-fit-cover shadow-sm border" alt="{{ $product->name }}" loading="lazy">
                         </td>
                         <td class="text-dark fw-bold">{{ $product->name }}</td>
                         <td><span class="badge bg-light-primary text-primary fs-7">{{ $product->category->name ?? '-' }}</span></td>

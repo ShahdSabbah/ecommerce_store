@@ -32,13 +32,20 @@ Route::get('/lang/{locale}', function (Request $request, $locale) {
 })->name('lang.switch');
 
 
-// 🛍️ 2. الواجهة الرئيسية للمتجر (مع الفلترة والأقسام)
+// 🛍️ 2. الواجهة الرئيسية للمتجر (مع الفلترة والبحث والأقسام)
 Route::get('/', function (Request $request) {
     $categories = Category::select('id', 'name')->get()->unique('name');
 
     $query = Product::with('category')->latest();
     if ($request->filled('category_id')) {
         $query->where('category_id', $request->category_id);
+    }
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
     }
     $products = $query->get();
 

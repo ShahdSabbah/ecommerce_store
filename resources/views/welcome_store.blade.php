@@ -28,16 +28,43 @@
     <!-- الهيدر العلوي المشترك مع جرس الإشعارات -->
     @include('layouts.header')
 
-    <!--  شريط الأقسام المفلتر -->
+    <!--  شريط البحث والأقسام المفلترة -->
     <section class="py-4 bg-white border-bottom shadow-sm">
         <div class="container">
+            <div class="row align-items-center mb-3 g-3">
+                <div class="col-12 col-md-7 col-lg-5">
+                    <form action="{{ route('home') }}" method="GET" class="d-flex gap-2">
+                        @if(request('category_id'))
+                            <input type="hidden" name="category_id" value="{{ request('category_id') }}">
+                        @endif
+                        <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                            <span class="input-group-text bg-light border-0 ps-3 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                   class="form-control bg-light border-0 py-2 fs-6" 
+                                   placeholder="{{ __('messages.search_placeholder') }}">
+                            @if(request('search'))
+                                <a href="{{ route('home', array_filter(['category_id' => request('category_id')])) }}" 
+                                   class="input-group-text bg-light border-0 text-muted" title="{{ __('messages.cancel') }}">
+                                    <i class="bi bi-x-circle-fill"></i>
+                                </a>
+                            @endif
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                {{ __('messages.search') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="d-flex gap-2 overflow-auto pb-2">
-                <a href="{{ route('home') }}" class="category-chip {{ !request('category_id') ? 'active' : '' }}">
+                <a href="{{ route('home', array_filter(['search' => request('search')])) }}" class="category-chip {{ !request('category_id') ? 'active' : '' }}">
                     {{ __('messages.all') }} 🛒
                 </a>
 
                 @foreach($categories as $category)
-                    <a href="{{ route('home', ['category_id' => $category->id]) }}" 
+                    <a href="{{ route('home', array_filter(['category_id' => $category->id, 'search' => request('search')])) }}" 
                        class="category-chip {{ request('category_id') == $category->id ? 'active' : '' }}">
                        {{ \Illuminate\Support\Facades\Lang::has('messages.' . $category->name) ? __('messages.' . $category->name) : $category->name }}
                     </a>
@@ -63,13 +90,7 @@
                 @forelse($products as $product)
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                         <div class="card product-card h-100 p-2">
-                            @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" class="product-img rounded-4" alt="{{ $product->name }}">
-                            @else
-                                <div class="product-img rounded-4 d-flex align-items-center justify-content-center text-muted">
-                                    <i class="bi bi-image fs-1"></i>
-                                </div>
-                            @endif
+                            <img src="{{ $product->image_url }}" class="product-img rounded-4" alt="{{ $product->name }}" loading="lazy">
 
                             <div class="card-body d-flex flex-column justify-content-between p-3">
                                 <div>

@@ -175,7 +175,19 @@ return [
     'no_documents_yet'      => 'No private documents or invoices found yet.',
 
     // 🔐 Auth
-    'remember_me'           => 'Remember me',
-    'forgot_password'       => 'Forgot your password?',
-    'already_registered'    => 'Already registered?',
+    'login_title'           => 'Sign In',
+    'login_subtitle'        => 'Welcome back! Please enter your details to continue',
+    'remember_me'           => 'Remember me on this device',
+    'forgot_password'       => 'Forgot password?',
+    'login_button'          => 'Sign In',
+    'dont_have_account'     => "Don't have an account?",
+    'register_now'          => 'Register now',
+    'register_title'        => 'Create New Account',
+    'register_subtitle'     => 'Join us today and enjoy a unique shopping experience',
+    'name'                  => 'Full Name',
+    'email_placeholder'     => 'example@mail.com',
+    'password_placeholder'  => '••••••••',
+    'register_button'       => 'Create Account',
+    'already_registered'    => 'Already have an account?',
+    'login_now'             => 'Log in here',
 ];

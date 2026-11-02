@@ -175,7 +175,19 @@ return [
     'no_documents_yet'      => 'لا توجد وثائق أو فواتير خاصة مسجلة حتى الآن.',
 
     // 🔐 المصادقة
-    'remember_me'           => 'تذكرني',
-    'forgot_password'       => 'هل نسيت كلمة المرور؟',
+    'login_title'           => 'تسجيل الدخول',
+    'login_subtitle'        => 'مرحباً بعودتك! أدخل بياناتك للمتابعة',
+    'remember_me'           => 'تذكرني على هذا الجهاز',
+    'forgot_password'       => 'نسيت كلمة المرور؟',
+    'login_button'          => 'دخول',
+    'dont_have_account'     => 'ليس لديك حساب؟',
+    'register_now'          => 'سجل حساب جديد الآن',
+    'register_title'        => 'إنشاء حساب جديد',
+    'register_subtitle'     => 'انضم إلينا اليوم واستمتع بتجربة تسوق فريدة ومميزة',
+    'name'                  => 'الاسم الكامل',
+    'email_placeholder'     => 'example@mail.com',
+    'password_placeholder'  => '••••••••',
+    'register_button'       => 'إنشاء الحساب',
     'already_registered'    => 'لديك حساب بالفعل؟',
+    'login_now'             => 'سجل دخولك هنا',
 ];
