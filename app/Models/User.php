@@ -52,7 +52,7 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return (bool) $this->is_super_admin;
+        return (bool) $this->is_super_admin || (method_exists($this, 'hasRole') && $this->hasRole('super_admin'));
     }
 
     /**
@@ -60,7 +60,9 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin' || $this->isSuperAdmin();
+        return $this->role === 'admin' 
+            || $this->isSuperAdmin() 
+            || (method_exists($this, 'hasRole') && ($this->hasRole('admin') || $this->hasRole('super_admin')));
     }
 
     /**

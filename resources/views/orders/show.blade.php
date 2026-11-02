@@ -41,24 +41,46 @@
                 
                 <div class="separator separator-dashed my-5"></div>
                 
-                <!-- نموذج تغيير حالة الطلب -->
-                <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    <label class="form-label fw-bolder text-gray-700 mb-3">{{ __('messages.update_status') }}:</label>
-                    <select name="status" class="form-select form-select-solid fw-bold" onchange="this.form.submit()">
-                        <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>{{ __('messages.status_pending') }}</option>
-                        <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>{{ __('messages.status_processing') }}</option>
-                        <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>{{ __('messages.status_completed') }}</option>
-                        <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>{{ __('messages.status_cancelled') }}</option>
-                    </select>
-                </form>
+                @if(isset($isAdmin) && $isAdmin)
+                    <!-- نموذج تغيير حالة الطلب (للأدمن فقط) -->
+                    <form action="{{ route('orders.updateStatus', $order->id) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <label class="form-label fw-bolder text-gray-700 mb-3">{{ __('messages.update_status') }}:</label>
+                        <select name="status" class="form-select form-select-solid fw-bold" onchange="this.form.submit()">
+                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>{{ __('messages.status_pending') }}</option>
+                            <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>{{ __('messages.status_processing') }}</option>
+                            <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>{{ __('messages.status_completed') }}</option>
+                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>{{ __('messages.status_cancelled') }}</option>
+                        </select>
+                    </form>
 
-                <div class="mt-5">
-                    <a href="{{ route('orders.index') }}" class="btn btn-light-secondary w-100 fw-bolder">
-                        {{ __('messages.back_to_list') }}
-                    </a>
-                </div>
+                    <div class="mt-5">
+                        <a href="{{ route('orders.index') }}" class="btn btn-light-secondary w-100 fw-bolder">
+                            {{ __('messages.back_to_list') }}
+                        </a>
+                    </div>
+                @else
+                    <!-- عرض حالة الطلب الحالية للعميل -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bolder text-gray-700 mb-2 d-block">{{ __('messages.status') }}:</label>
+                        @if($order->status == 'pending')
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2 fw-bold"><i class="bi bi-clock-history me-1"></i> {{ __('messages.status_pending') }}</span>
+                        @elseif($order->status == 'processing')
+                            <span class="badge bg-info text-white fs-6 px-3 py-2 fw-bold"><i class="bi bi-gear-fill me-1"></i> {{ __('messages.status_processing') }}</span>
+                        @elseif($order->status == 'completed')
+                            <span class="badge bg-success text-white fs-6 px-3 py-2 fw-bold"><i class="bi bi-check-circle-fill me-1"></i> {{ __('messages.status_completed') }}</span>
+                        @else
+                            <span class="badge bg-danger text-white fs-6 px-3 py-2 fw-bold"><i class="bi bi-x-circle-fill me-1"></i> {{ __('messages.status_cancelled') }}</span>
+                        @endif
+                    </div>
+
+                    <div class="mt-5">
+                        <a href="{{ route('home') }}" class="btn btn-primary w-100 fw-bolder">
+                            🛍️ {{ __('messages.back_to_store') }}
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

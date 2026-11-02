@@ -81,7 +81,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 });
 
@@ -95,13 +94,16 @@ Route::middleware(['auth', 'super_admin'])->group(function () {
 });
 
 
-// 👤 6. مسارات الملف الشخصي والشراء والإشعارات (متاحة لكل مستخدم مسجل دخوله)
+// 👤 6. مسارات الملف الشخصي والشراء والإشعارات والطلبات (متاحة لكل مستخدم مسجل دخوله)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    // 📦 عرض تفاصيل وفاتورة الطلب (للأدمن أو لصاحب الطلب فقط)
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     // 🔔 مسارات مركز الإشعارات
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

@@ -94,13 +94,29 @@
 
                             <div class="card-body d-flex flex-column justify-content-between p-3">
                                 <div>
-                                    <span class="badge bg-light text-primary rounded-pill px-3 py-1 mb-2 border">
-                                        @if($product->category)
-                                            {{ \Illuminate\Support\Facades\Lang::has('messages.' . $product->category->name) ? __('messages.' . $product->category->name) : $product->category->name }}
+                                    <div class="d-flex justify-content-between align-items-center gap-1 mb-2">
+                                        <span class="badge bg-light text-primary rounded-pill px-3 py-1 border text-truncate">
+                                            @if($product->category)
+                                                {{ \Illuminate\Support\Facades\Lang::has('messages.' . $product->category->name) ? __('messages.' . $product->category->name) : $product->category->name }}
+                                            @else
+                                                {{ __('messages.categories') }}
+                                            @endif
+                                        </span>
+
+                                        @if($product->stock > 5)
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> {{ __('messages.in_stock') }} ({{ __('messages.pieces_left', ['count' => $product->stock]) }})
+                                            </span>
+                                        @elseif($product->stock > 0)
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ __('messages.low_stock') }} ({{ __('messages.pieces_left', ['count' => $product->stock]) }})
+                                            </span>
                                         @else
-                                            {{ __('messages.categories') }}
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                <i class="bi bi-x-circle-fill me-1"></i> {{ __('messages.out_of_stock') }}
+                                            </span>
                                         @endif
-                                    </span>
+                                    </div>
                                     <h6 class="fw-bold text-dark mb-1">{{ $product->name }}</h6>
                                     <p class="text-muted small mb-3 text-truncate">{{ $product->description }}</p>
                                 </div>
@@ -113,13 +129,19 @@
                                         </span>
                                     </div>
 
-                                    <form action="{{ route('cart.add', $product->id) }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary btn-cart w-100">
-                                            🛒 {{ __('messages.add_to_cart') }}
+                                    @if($product->stock > 0)
+                                        <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn btn-primary btn-cart w-100">
+                                                🛒 {{ __('messages.add_to_cart') }}
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button type="button" class="btn btn-secondary w-100 opacity-75 shadow-none" style="cursor: not-allowed;" disabled>
+                                            ❌ {{ __('messages.out_of_stock') }}
                                         </button>
-                                    </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>

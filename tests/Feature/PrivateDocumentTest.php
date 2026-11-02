@@ -4,12 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\PrivateDocument;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PrivateDocumentTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected $superAdmin;
 
     protected function setUp(): void
@@ -26,7 +29,7 @@ class PrivateDocumentTest extends TestCase
     {
         Storage::fake('private');
 
-        $file = UploadedFile::fake()->image('test_doc.png', 100, 100);
+        $file = UploadedFile::fake()->create('test_doc.png', 100, 'image/png');
         $path = $file->store('documents', 'private');
 
         $document = PrivateDocument::create([
@@ -52,7 +55,7 @@ class PrivateDocumentTest extends TestCase
     {
         Storage::fake('private');
 
-        $file = UploadedFile::fake()->image('to_delete.png');
+        $file = UploadedFile::fake()->create('to_delete.png', 100, 'image/png');
         $path = $file->store('documents', 'private');
 
         $document = PrivateDocument::create([

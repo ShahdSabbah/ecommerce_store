@@ -37,7 +37,17 @@ class OrderController extends Controller
             abort(404);
         }
 
-        return view('orders.show', compact('order'));
+        // 🛡️ التحقق الأمني من الصلاحية:
+        // الأدمن يرى كل الطلبات، أما العميل فيرى فقط طلبه إذا كان مطابقاً لبريده الإلكتروني المسجل به
+        $user = auth()->user();
+        $isAdmin = $user && method_exists($user, 'isAdmin') && $user->isAdmin();
+        $isOwner = $user && strtolower(trim($user->email)) === strtolower(trim($order->customer_email));
+
+        if (!$isAdmin && !$isOwner) {
+            abort(403, __('messages.unauthorized_order_view'));
+        }
+
+        return view('orders.show', compact('order', 'isAdmin'));
     }
 
     // 3. تحديث حالة الطلب

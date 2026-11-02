@@ -13,22 +13,25 @@
     <div class="aside-menu my-5 px-4">
         <div class="menu menu-column menu-title-gray-400 menu-state-title-primary menu-state-icon-primary">
             
-            <!-- الرئيسية / Dashboard -->
+            <!-- الرئيسية / Dashboard (للأدمن فقط) -->
+            @if(auth()->check() && method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())
             <div class="menu-item mb-2">
                 <a class="menu-link py-3 px-4 rounded text-white d-flex align-items-center {{ request()->routeIs('dashboard') ? 'bg-primary' : '' }}" href="{{ route('dashboard') }}">
                     <i class="bi bi-speedometer2 fs-4 me-3"></i>
                     <span class="menu-title fw-bold">{{ __('messages.dashboard') }}</span>
                 </a>
             </div>
+            @endif
 
             <!-- المتجر / Storefront -->
             <div class="menu-item mb-2">
-                <a class="menu-link py-3 px-4 rounded text-white d-flex align-items-center" href="{{ route('home') }}" target="_blank">
+                <a class="menu-link py-3 px-4 rounded text-white d-flex align-items-center" href="{{ route('home') }}">
                     <i class="bi bi-shop fs-4 me-3"></i>
                     <span class="menu-title fw-bold">{{ __('messages.back_to_store') }}</span>
                 </a>
             </div>
 
+            @if(auth()->check() && method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())
             <!-- إدارة الأقسام -->
             <div class="menu-item mb-2">
                 <a class="menu-link py-3 px-4 rounded text-white d-flex align-items-center {{ request()->routeIs('categories.*') ? 'bg-primary' : '' }}" href="{{ route('categories.index') }}">
@@ -52,6 +55,7 @@
                     <span class="menu-title fw-bold">{{ __('messages.orders_management') }}</span>
                 </a>
             </div>
+            @endif
 
             <!-- إدارة المستخدمين (تظهر فقط للسوبر أدمن) -->
             @if(auth()->check() && auth()->user()->isSuperAdmin())

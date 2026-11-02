@@ -51,7 +51,9 @@ return [
     'latest_products'       => 'Latest Products 🌟',
     'add_to_cart'           => 'Add to Cart',
     'in_stock'              => 'In Stock',
+    'low_stock'             => 'Low Stock',
     'out_of_stock'          => 'Out of Stock',
+    'pieces_left'           => ':count left',
     'stock_available'       => 'Stock Available',
     'view_details'          => 'View Details',
     'product_added_to_cart' => 'Product added to cart successfully!',
@@ -130,6 +132,12 @@ return [
     'status_completed'      => 'Completed',
     'status_cancelled'      => 'Cancelled',
     'order_status_updated'  => 'Order status updated successfully!',
+    'unauthorized_order_view' => 'You are not authorized to view this order.',
+
+    // 🚫 Errors (404)
+    'page_not_found'        => 'Page Not Found!',
+    'page_not_found_desc'   => 'Oops! The page or link you are looking for does not exist or has been moved.',
+    'back_to_shopping'      => 'Back to Shopping 🛍️',
 
     // 👑 Users & Super Admin
     'users_list_title'      => 'Users & Roles Management',

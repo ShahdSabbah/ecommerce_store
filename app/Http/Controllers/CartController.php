@@ -29,6 +29,11 @@ class CartController extends Controller
             return redirect()->back()->with('error', __('messages.product_not_found'));
         }
 
+        // الحماية من إضافة منتج نفد من المخزون
+        if ($product->stock <= 0) {
+            return redirect()->back()->with('error', __('messages.out_of_stock'));
+        }
+
         $cart = session()->get('cart', []);
         $quantity = (int) $request->input('quantity', 1);
 

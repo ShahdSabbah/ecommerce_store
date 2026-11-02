@@ -50,8 +50,10 @@ return [
     'welcome_subtitle'      => 'استكشف أفضل المنتجات والماركات الحصرية بأفضل الأسعار',
     'latest_products'       => 'أحدث المنتجات 🌟',
     'add_to_cart'           => 'إضافة للسلة',
-    'in_stock'              => 'متوفر في المخزون',
-    'out_of_stock'          => 'نفذت الكمية',
+    'in_stock'              => 'متوفر',
+    'low_stock'             => 'كمية محدودة',
+    'out_of_stock'          => 'نفد من المخزون',
+    'pieces_left'           => 'باقي :count قطع',
     'stock_available'       => 'الكمية المتوفرة',
     'view_details'          => 'عرض التفاصيل',
     'product_added_to_cart' => 'تمت إضافة المنتج للسلة بنجاح!',
@@ -130,6 +132,12 @@ return [
     'status_completed'      => 'مكتمل ومسلّم',
     'status_cancelled'      => 'ملغي',
     'order_status_updated'  => 'تم تحديث حالة الطلب بنجاح!',
+    'unauthorized_order_view' => 'عذراً، لا تملك صلاحية عرض هذا الطلب.',
+
+    // 🚫 أخطاء النظام (404)
+    'page_not_found'        => 'الصفحة غير موجودة!',
+    'page_not_found_desc'   => 'عذراً، الصفحة أو الرابط الذي تبحث عنه غير متوفر أو ربما تم نقله.',
+    'back_to_shopping'      => 'العودة للتسوق 🛍️',
 
     // 👑 إدارة المستخدمين والسوبر أدمن
     'users_list_title'      => 'قائمة المستخدمين والصلاحيات',

@@ -13,6 +13,8 @@ use Tests\TestCase;
 
 class CacheAndObserverTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
      * اختبار مسح الكاش تلقائياً بواسطة ProductObserver عند إنشاء منتج جديد
      */
