@@ -35,7 +35,17 @@
                 @php
                     $isUnread = is_null($notification->read_at);
                     $data = $notification->data;
-                    $msg = $data['message'] ?? 'إشعار جديد';
+                    
+                    if (app()->getLocale() === 'en') {
+                        $msg = $data['message_en'] ?? (
+                            !empty($data['order_id']) 
+                                ? "Your order #{$data['order_id']} has been received successfully."
+                                : ($data['message'] ?? 'New Notification')
+                        );
+                    } else {
+                        $msg = $data['message_ar'] ?? ($data['message'] ?? 'إشعار جديد');
+                    }
+
                     $actionUrl = $data['action_url'] ?? null;
                     
                     // تحديد الأيقونة واللون حسب نوع الإشعار

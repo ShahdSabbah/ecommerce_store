@@ -27,6 +27,19 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $isEn = app()->getLocale() === 'en';
+
+        if ($isEn) {
+            return (new MailMessage)
+                ->subject("Order Confirmation #{$this->order->id}")
+                ->greeting("Hello {$this->order->customer_name}!")
+                ->line("Your order #{$this->order->id} has been received successfully.")
+                ->line("Total Amount: \${$this->order->total_price}")
+                ->line("Delivery Address: {$this->order->address}")
+                ->action('View Order Details', url('/orders/' . $this->order->id))
+                ->line('Thank you for shopping with us!');
+        }
+
         return (new MailMessage)
             ->subject("تأكيد الطلب #{$this->order->id}")
             ->greeting("مرحباً {$this->order->customer_name}!")
@@ -42,11 +55,16 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $msgAr = "تم استلام طلبك الجديد رقم #{$this->order->id} بنجاح.";
+        $msgEn = "Your new order #{$this->order->id} has been received successfully.";
+
         return [
             'order_id'       => $this->order->id,
             'customer_name'  => $this->order->customer_name,
             'total_price'    => $this->order->total_price,
-            'message'        => "تم استلام طلبك الجديد رقم #{$this->order->id} بنجاح.",
+            'message'        => app()->getLocale() === 'en' ? $msgEn : $msgAr,
+            'message_ar'     => $msgAr,
+            'message_en'     => $msgEn,
             'action_url'     => url('/orders/' . $this->order->id),
         ];
     }

@@ -172,7 +172,10 @@
                     const toastEl = document.getElementById('liveOrderToast');
                     const toastBody = document.getElementById('liveOrderToastBody');
                     if (toastEl && toastBody) {
-                        toastBody.innerHTML = `<strong>⚡ طلب جديد فوري (WebSocket):</strong><br>${data.message}`;
+                        const isEn = "{{ app()->getLocale() }}" === 'en';
+                        const toastTitle = isEn ? '⚡ Instant New Order (WebSocket):' : '⚡ طلب جديد فوري (WebSocket):';
+                        const toastMsg = isEn ? (data.message_en || data.message) : (data.message_ar || data.message);
+                        toastBody.innerHTML = `<strong>${toastTitle}</strong><br>${toastMsg}`;
                         const toast = new bootstrap.Toast(toastEl, { delay: 25000 });
                         toast.show();
                     }
