@@ -37,9 +37,20 @@ Route::get('/', function (Request $request) {
     $categories = Category::select('id', 'name')->get()->unique('name');
 
     $query = Product::with('category')->latest();
+
+    // فلترة الأقسام: دعم الأقسام المتشابهة بالاسم في قاعدة البيانات
     if ($request->filled('category_id')) {
-        $query->where('category_id', $request->category_id);
+        $selectedCategory = Category::find($request->category_id);
+        if ($selectedCategory) {
+            $rawName = $selectedCategory->getRawOriginal('name');
+            $categoryIds = Category::where('name', $rawName)->pluck('id');
+            $query->whereIn('category_id', $categoryIds);
+        } else {
+            $query->where('category_id', $request->category_id);
+        }
     }
+
+    // فلترة البحث
     if ($request->filled('search')) {
         $search = trim($request->search);
         $query->where(function ($q) use ($search) {
@@ -47,6 +58,7 @@ Route::get('/', function (Request $request) {
               ->orWhere('description', 'like', "%{$search}%");
         });
     }
+
     $products = $query->get();
 
     return view('welcome_store', compact('categories', 'products'));
