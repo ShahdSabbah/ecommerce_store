@@ -55,13 +55,33 @@ Route::get('/', function (Request $request) {
         $search = trim($request->search);
         $query->where(function ($q) use ($search) {
             $q->where('name', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhereHas('category', function ($catQ) use ($search) {
+                  $catQ->where('name', 'like', "%{$search}%");
+              });
         });
     }
 
     $products = $query->get();
 
-    return view('welcome_store', compact('categories', 'products'));
+    // 🎯 تحديد القسم النشط تلقائياً:
+    // إذا حدد العميل قسماً بالفلتر نعتمد عليه، وإذا بحث عن منتج نكتشف قسم المنتج في نتائج البحث ونعلّم عليه تلقائياً
+    $activeCategoryId = $request->category_id;
+
+    if (!$activeCategoryId && $request->filled('search') && $products->isNotEmpty()) {
+        $firstCategory = $products->first()->category;
+        if ($firstCategory) {
+            $rawCatName = $firstCategory->getRawOriginal('name');
+            $matchedCat = $categories->first(function ($c) use ($rawCatName) {
+                return $c->getRawOriginal('name') === $rawCatName;
+            });
+            if ($matchedCat) {
+                $activeCategoryId = $matchedCat->id;
+            }
+        }
+    }
+
+    return view('welcome_store', compact('categories', 'products', 'activeCategoryId'));
 })->name('home');
 
 

@@ -58,14 +58,15 @@
                 </div>
             </div>
 
+            @php $currentActiveCat = $activeCategoryId ?? request('category_id'); @endphp
             <div class="d-flex gap-2 overflow-auto pb-2">
-                <a href="{{ route('home') }}" class="category-chip {{ !request('category_id') && !request('search') ? 'active' : '' }}">
+                <a href="{{ route('home') }}" class="category-chip {{ empty($currentActiveCat) ? 'active' : '' }}">
                     {{ __('messages.all') }} 🛒
                 </a>
 
                 @foreach($categories as $category)
                     <a href="{{ route('home', ['category_id' => $category->id]) }}" 
-                       class="category-chip {{ request('category_id') == $category->id ? 'active' : '' }}">
+                       class="category-chip {{ $currentActiveCat == $category->id ? 'active' : '' }}">
                        {{ \Illuminate\Support\Facades\Lang::has('messages.' . $category->name) ? __('messages.' . $category->name) : $category->name }}
                     </a>
                 @endforeach
