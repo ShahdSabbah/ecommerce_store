@@ -128,34 +128,18 @@ class ProductController extends Controller
     }
 
     /**
-     * دالة مساعدة لتنسيق وتجهيز بيانات المنتج والترجمات مع الـ Fallback
+     * دالة مساعدة لتنسيق وتجهيز بيانات المنتج
      */
     private function formatProduct(Product $product, string $locale): array
     {
-        // معالجة ترجمة الاسم مع الخيار البديل (Fallback)
-        $translationsName = $product->getTranslations('name');
-        $name = $product->getTranslation('name', $locale, false);
-        if (empty($name)) {
-            $name = $product->getTranslation('name', 'en', false) 
-                ?? (is_array($translationsName) && !empty($translationsName) ? reset($translationsName) : '');
-        }
-
-        // معالجة ترجمة الوصف مع الخيار البديل (Fallback)
-        $translationsDesc = $product->getTranslations('description');
-        $description = $product->getTranslation('description', $locale, false);
-        if (empty($description)) {
-            $description = $product->getTranslation('description', 'en', false) 
-                ?? (is_array($translationsDesc) && !empty($translationsDesc) ? reset($translationsDesc) : '');
-        }
-
         return [
             'id'          => $product->id,
             'category_id' => $product->category_id,
-            'name'        => $name ?: '',
-            'description' => $description ?: '',
+            'name'        => $product->name,
+            'description' => $product->description ?? '',
             'price'       => $product->price,
             'stock'       => $product->stock,
-            'image'       => $product->image,
+            'image_url'   => $product->image_url,
             'created_at'  => $product->created_at,
             'updated_at'  => $product->updated_at,
         ];

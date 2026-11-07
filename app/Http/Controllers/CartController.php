@@ -36,6 +36,12 @@ class CartController extends Controller
 
         $cart = session()->get('cart', []);
         $quantity = (int) $request->input('quantity', 1);
+        $currentQtyInCart = isset($cart[$id]) ? (int) $cart[$id]['quantity'] : 0;
+
+        // التحقق من أن إجمالي الكمية لا يتجاوز المخزون المتوفر في قاعدة البيانات
+        if (($currentQtyInCart + $quantity) > $product->stock) {
+            return redirect()->back()->with('error', __('messages.max_stock_reached', ['count' => $product->stock]));
+        }
 
         // إذا كان المنتج موجوداً مسبقاً في السلة نزيد الكمية
         if (isset($cart[$id])) {
@@ -70,7 +76,7 @@ class CartController extends Controller
         return redirect()->back()->with('success', __('messages.item_removed_from_cart'));
     }
 
-    // تحديث كمية منتج في السلة
+    // تحديث كمية منتج في السلة مع فحص الحد الأقصى للمخزون
     public function update(Request $request, $id)
     {
         $cart = session()->get('cart', []);
@@ -79,6 +85,16 @@ class CartController extends Controller
             $type = $request->input('type');
 
             if ($type === 'increase') {
+                $product = Product::find($id);
+                if (!$product) {
+                    return redirect()->back()->with('error', __('messages.product_not_found'));
+                }
+
+                // الحماية من تجاوز المخزون المتوفر عند زيادة الكمية
+                if ($cart[$id]['quantity'] >= $product->stock) {
+                    return redirect()->back()->with('error', __('messages.max_stock_reached', ['count' => $product->stock]));
+                }
+
                 $cart[$id]['quantity']++;
             } elseif ($type === 'decrease' && $cart[$id]['quantity'] > 1) {
                 $cart[$id]['quantity']--;

@@ -37,13 +37,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // تسجيل الخروج
     Route::post('/logout', [AuthController::class, 'logout']);
     // مسار لارجاع بيانات المستخدم صاحب الـ Token الحالي
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-    // مسارات سلة التسوق
-    Route::get('/cart', [CartController::class, 'index']);      // عرض السلة
-    Route::post('/cart', [CartController::class, 'store']);     // إضافة منتج
-    Route::delete('/cart/{id}', [CartController::class, 'destroy']); // حذف عنصر
+    Route::get('/user', [AuthController::class, 'user']);
+
+    // مسارات سلة التسوق الكاملة
+    Route::get('/cart', [CartController::class, 'index']);             // عرض محتويات السلة
+    Route::post('/cart', [CartController::class, 'store']);            // إضافة منتج للسلة مع فحص المخزون
+    Route::put('/cart/{id}', [CartController::class, 'update']);       // تحديث كمية منتج في السلة
+    Route::delete('/cart/{id}', [CartController::class, 'destroy']);   // حذف منتج معين من السلة
+    Route::delete('/cart', [CartController::class, 'clear']);          // تفريغ السلة بالكامل
+
     // مسارات الطلبات
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);

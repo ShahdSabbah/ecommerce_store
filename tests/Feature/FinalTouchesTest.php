@@ -124,4 +124,59 @@ class FinalTouchesTest extends TestCase
         $adminResponse->assertStatus(200);
         $adminResponse->assertSee('Shahd Sabbah');
     }
+
+    /** 4. اختبار منع البيع بالسالب وحماية المخزون في السلة وإتمام الطلب */
+    public function test_overselling_prevention_in_cart_and_checkout()
+    {
+        $category = Category::create(['name' => 'perfumes']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'name' => 'Rare Perfume',
+            'price' => 150,
+            'stock' => 1, // قطعة واحدة فقط متوفرة
+        ]);
+
+        // 4.1 محاولة إضافة كمية 2 من البداية تفشل
+        $addOverResponse = $this->post(route('cart.add', $product->id), ['quantity' => 2]);
+        $addOverResponse->assertSessionHas('error');
+
+        // 4.2 إضافة الكمية المتاحة (1) تنجح
+        $addValidResponse = $this->post(route('cart.add', $product->id), ['quantity' => 1]);
+        $addValidResponse->assertSessionHas('success');
+
+        // 4.3 محاولة زيادة الكمية في السلة عبر update تفشل
+        $updateResponse = $this->patch(route('cart.update', $product->id), ['type' => 'increase']);
+        $updateResponse->assertSessionHas('error');
+
+        // 4.4 محاولة إتمام الطلب بكمية أكبر من المخزون (لو تم التلاعب بالسلة إلى 3 قطع)
+        $user = User::factory()->create();
+        $user->assignRole('customer');
+
+        // محاكاة سلة بها كمية 3 لمنتج مخزونه 1
+        $manipulatedCart = [
+            $product->id => [
+                'name' => $product->name,
+                'quantity' => 3,
+                'price' => $product->price,
+                'image' => $product->image_url,
+            ]
+        ];
+
+        $checkoutResponse = $this->actingAs($user)
+            ->withSession(['cart' => $manipulatedCart])
+            ->post(route('checkout.store'), [
+                'phone' => '0599123456',
+                'shipping_address' => 'Palestine, Gaza',
+            ]);
+
+        // يجب رفض الطلب وإعادة التوجيه لصفحة السلة مع رسالة خطأ
+        $checkoutResponse->assertRedirect(route('cart.index'));
+        $checkoutResponse->assertSessionHas('error');
+
+        // التأكد من عدم إنشاء أي طلب في قاعدة البيانات
+        $this->assertEquals(0, Order::count());
+
+        // التأكد من أن مخزون المنتج بقي كما هو (1) ولم يصبح بالسالب (-2)
+        $this->assertEquals(1, $product->fresh()->stock);
+    }
 }

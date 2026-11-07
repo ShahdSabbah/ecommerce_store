@@ -63,6 +63,8 @@ return [
     'cart_empty'            => 'Your Cart is Currently Empty!',
     'cart_empty_msg'        => 'You haven’t added any products yet. Browse our exclusive catalog now!',
     'cart_updated'          => 'Cart item quantity updated!',
+    'max_stock_reached'     => 'Sorry, the maximum available quantity in stock is :count only!',
+    'insufficient_stock'    => 'Sorry, the product ":name" is no longer available in the requested quantity (currently available: :stock only).',
     'item_removed_from_cart'=> 'Item removed from cart successfully!',
     'product'               => 'Product',
     'price'                 => 'Price',

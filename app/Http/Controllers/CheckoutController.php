@@ -41,6 +41,19 @@ class CheckoutController extends Controller
             'shipping_address' => 'required|string|max:500',
         ]);
 
+        // 🛡️ صمام الأمان لمنع البيع بالسالب (Overselling):
+        // فحص توفر الكميات المطلوبة في المخزون الحقيقي قبل إنشاء الطلب
+        foreach ($cart as $productId => $details) {
+            $product = \App\Models\Product::find($productId);
+            if (!$product || $details['quantity'] > $product->stock) {
+                $availableStock = $product ? $product->stock : 0;
+                return redirect()->route('cart.index')->with('error', __('messages.insufficient_stock', [
+                    'name'  => $details['name'] ?? ($product->name ?? ''),
+                    'stock' => $availableStock
+                ]));
+            }
+        }
+
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];

@@ -101,6 +101,39 @@
                 }
             }
         },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "عرض بيانات المستخدم المسجل حالياً",
+                "operationId": "961ad57987905b44ae2e2f40b82e76de",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "بيانات المستخدم"
+                    },
+                    "401": {
+                        "description": "غير مصرح به (Token مفقود أو غير صالح)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/logout": {
             "post": {
                 "tags": [
@@ -135,6 +168,37 @@
             }
         },
         "/api/cart": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "عرض محتويات سلة المستخدم الحالي",
+                "operationId": "getCart",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم جلب محتويات السلة بنجاح"
+                    },
+                    "401": {
+                        "description": "غير مصرح به (Token مفقود أو غير صالح)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Cart"
@@ -158,17 +222,17 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "product_id",
-                                    "quantity"
+                                    "product_id"
                                 ],
                                 "properties": {
                                     "product_id": {
                                         "type": "integer",
-                                        "example": 2
+                                        "example": 1
                                     },
                                     "quantity": {
                                         "type": "integer",
-                                        "example": 2
+                                        "default": 1,
+                                        "example": 1
                                     }
                                 },
                                 "type": "object"
@@ -178,7 +242,152 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "تمت إضافة المنتج بنجاح"
+                        "description": "تمت إضافة المنتج إلى السلة بنجاح"
+                    },
+                    "422": {
+                        "description": "الكمية المطلوبة تتجاوز المخزون أو المنتج غير متوفر"
+                    },
+                    "401": {
+                        "description": "غير مصرح به"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "تفريغ السلة بالكامل للمستخدم الحالي",
+                "operationId": "clearCart",
+                "parameters": [
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم تفريغ السلة بنجاح"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart/{id}": {
+            "put": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "تحديث كمية منتج في السلة",
+                "operationId": "updateCartItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "معرف عنصر السلة (Cart Item ID)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "application/json"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "quantity": {
+                                        "description": "الكمية الجديدة مباشرة",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "type": {
+                                        "description": "أو نوع العملية: زيادة أو نقصان",
+                                        "type": "string",
+                                        "enum": [
+                                            "increase",
+                                            "decrease"
+                                        ],
+                                        "example": "increase"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "تم تحديث كمية المنتج بنجاح"
+                    },
+                    "404": {
+                        "description": "العنصر غير موجود في السلة"
+                    },
+                    "422": {
+                        "description": "الكمية المطلوبة تتجاوز المخزون المتوفر"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "حذف منتج معين من السلة",
+                "operationId": "removeCartItem",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "معرف عنصر السلة (Cart Item ID)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "Accept",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "application/json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم حذف المنتج من السلة بنجاح"
+                    },
+                    "404": {
+                        "description": "العنصر غير موجود في السلة"
                     }
                 },
                 "security": [
@@ -325,7 +534,7 @@
                     "Products"
                 ],
                 "summary": "عرض جميع المنتجات",
-                "description": "يرجع قائمة بكل المنتجات المتاحة في المتجر",
+                "description": "يرجع قائمة بكل المنتجات المتاحة في المتجر مع التصفح والكاش",
                 "operationId": "getProductsList",
                 "parameters": [
                     {
@@ -336,6 +545,26 @@
                         "schema": {
                             "type": "string",
                             "default": "ar"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "رقم الصفحة",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "عدد العناصر في الصفحة",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
                         }
                     }
                 ],
@@ -360,7 +589,7 @@
                         "required": true,
                         "schema": {
                             "type": "integer",
-                            "example": 61
+                            "example": 1
                         }
                     },
                     {

@@ -96,9 +96,33 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
         ], 200);
     }
-/**
- * @OA\Post(
- *      path="/api/logout",
+    /**
+     * @OA\Get(
+     *      path="/api/user",
+     *      tags={"Authentication"},
+     *      summary="عرض بيانات المستخدم المسجل حالياً",
+     *      security={{"bearerAuth": {}}},
+     *      @OA\Parameter(
+     *          name="Accept",
+     *          in="header",
+     *          required=true,
+     *          @OA\Schema(type="string", default="application/json")
+     *      ),
+     *      @OA\Response(response=200, description="بيانات المستخدم"),
+     *      @OA\Response(response=401, description="غير مصرح به (Token مفقود أو غير صالح)")
+     * )
+     */
+    public function user(Request $request)
+    {
+        return response()->json([
+            'status' => true,
+            'user' => $request->user()
+        ], 200);
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/api/logout",
  *      tags={"Authentication"},
  *      summary="تسجيل الخروج",
  *      security={{"bearerAuth": {}}},

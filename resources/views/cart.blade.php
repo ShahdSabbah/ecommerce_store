@@ -36,6 +36,14 @@
             </div>
         @endif
 
+        {{-- تنبيه رسائل الخطأ أو تجاوز كمية المخزون --}}
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 mb-4 shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         @if(count($cart) > 0)
             <div class="card cart-card mb-4">
                 <div class="card-body p-0">

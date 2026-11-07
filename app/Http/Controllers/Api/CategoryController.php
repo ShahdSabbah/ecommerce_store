@@ -26,21 +26,14 @@ class CategoryController extends Controller
         $cacheKey = "categories_all_lang_{$locale}";
 
         // حفظ الأقسام في الكاش لمدة 24 ساعة (86400 ثانية) لأن الأقسام لا تتغير كثيراً
-        $categories = Cache::remember($cacheKey, 86400, function () use ($locale) {
+        $categories = Cache::remember($cacheKey, 86400, function () {
             $cats = Category::all();
 
-            return $cats->map(function ($category) use ($locale) {
-                $translations = $category->getTranslations('name');
-                $name = $category->getTranslation('name', $locale, false);
-
-                if (empty($name)) {
-                    $fallback = $category->getTranslation('name', 'en', false);
-                    $name = !empty($fallback) ? $fallback : (is_array($translations) ? reset($translations) : '');
-                }
-
+            return $cats->map(function ($category) {
                 return [
-                    'id'   => $category->id,
-                    'name' => $name ?: '',
+                    'id'          => $category->id,
+                    'name'        => $category->name,
+                    'description' => $category->description ?? '',
                 ];
             });
         });
@@ -69,25 +62,18 @@ class CategoryController extends Controller
         // مفتاح كاش فريد لكل قسم ولغة
         $cacheKey = "category_detail_{$id}_lang_{$locale}";
 
-        $category = Cache::remember($cacheKey, 86400, function () use ($id, $locale) {
+        $category = Cache::remember($cacheKey, 86400, function () use ($id) {
             $cat = Category::with('products')->find($id);
 
             if (!$cat) {
                 return null;
             }
 
-            $translations = $cat->getTranslations('name');
-            $name = $cat->getTranslation('name', $locale, false);
-
-            if (empty($name)) {
-                $fallback = $cat->getTranslation('name', 'en', false);
-                $name = !empty($fallback) ? $fallback : (is_array($translations) ? reset($translations) : '');
-            }
-
             return [
-                'id'       => $cat->id,
-                'name'     => $name ?: '',
-                'products' => $cat->products
+                'id'          => $cat->id,
+                'name'        => $cat->name,
+                'description' => $cat->description ?? '',
+                'products'    => $cat->products
             ];
         });
 

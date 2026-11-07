@@ -10,6 +10,12 @@
             <div class="card border-0 shadow-sm p-4 rounded-4">
                 <h5 class="fw-bold mb-3 border-bottom pb-2 text-dark">{{ __('messages.delivery_details') }}</h5>
 
+                @if(session('error'))
+                    <div class="alert alert-danger rounded-3 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+                    </div>
+                @endif
+
                 @if($errors->any())
                     <div class="alert alert-danger rounded-3">
                         <ul class="mb-0">
