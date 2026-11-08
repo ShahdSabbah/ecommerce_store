@@ -12,6 +12,7 @@ class CategoryController extends Controller
     /**
      * @OA\Get(
      *      path="/api/categories",
+     *      operationId="getCategoriesList",
      *      tags={"Categories"},
      *      summary="عرض جميع الأقسام",
      *      @OA\Response(response=200, description="قائمة الأقسام")
@@ -48,6 +49,7 @@ class CategoryController extends Controller
     /**
      * @OA\Get(
      *      path="/api/categories/{id}",
+     *      operationId="getCategoryById",
      *      tags={"Categories"},
      *      summary="عرض تفاصيل قسم معين",
      *      @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer", example=1)),

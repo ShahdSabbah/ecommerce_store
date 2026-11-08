@@ -15,6 +15,7 @@ class OrderController extends Controller
     /**
      * @OA\Get(
      *      path="/api/orders",
+     *      operationId="getUserOrders",
      *      tags={"Orders"},
      *      summary="عرض طلبات المستخدم",
      *      security={{"bearerAuth": {}}},
@@ -48,6 +49,7 @@ class OrderController extends Controller
     /**
      * @OA\Post(
      *      path="/api/orders",
+     *      operationId="createOrderFromCart",
      *      tags={"Orders"},
      *      summary="إنشاء طلب جديد من السلة",
      *      security={{"bearerAuth": {}}},

@@ -78,6 +78,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *      path="/api/products/{id}",
+     *      operationId="getProductById",
      *      tags={"Products"},
      *      summary="عرض تفاصيل منتج واحد",
      *      @OA\Parameter(

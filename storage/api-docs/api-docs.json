@@ -21,7 +21,7 @@
                     "Authentication"
                 ],
                 "summary": "إنشاء حساب جديد",
-                "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
+                "operationId": "registerUser",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -69,7 +69,7 @@
                     "Authentication"
                 ],
                 "summary": "تسجيل الدخول والحصول على Token",
-                "operationId": "222b2625838e3c57e017987f73598fda",
+                "operationId": "loginUser",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -107,7 +107,7 @@
                     "Authentication"
                 ],
                 "summary": "عرض بيانات المستخدم المسجل حالياً",
-                "operationId": "961ad57987905b44ae2e2f40b82e76de",
+                "operationId": "getUserProfile",
                 "parameters": [
                     {
                         "name": "Accept",
@@ -140,7 +140,7 @@
                     "Authentication"
                 ],
                 "summary": "تسجيل الخروج",
-                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "operationId": "logoutUser",
                 "parameters": [
                     {
                         "name": "Accept",
@@ -403,7 +403,7 @@
                     "Categories"
                 ],
                 "summary": "عرض جميع الأقسام",
-                "operationId": "ac9c4d978ea4e5b72915ca9728e5b8b1",
+                "operationId": "getCategoriesList",
                 "responses": {
                     "200": {
                         "description": "قائمة الأقسام"
@@ -417,7 +417,7 @@
                     "Categories"
                 ],
                 "summary": "عرض تفاصيل قسم معين",
-                "operationId": "09767bb2e47dde77dd1e2591428b0ae1",
+                "operationId": "getCategoryById",
                 "parameters": [
                     {
                         "name": "id",
@@ -442,7 +442,7 @@
                     "Orders"
                 ],
                 "summary": "عرض طلبات المستخدم",
-                "operationId": "955bb77a45ae173a485fadb8befed93f",
+                "operationId": "getUserOrders",
                 "parameters": [
                     {
                         "name": "Accept",
@@ -470,7 +470,7 @@
                     "Orders"
                 ],
                 "summary": "إنشاء طلب جديد من السلة",
-                "operationId": "2123ba58dadb22bd6f2c8081af562230",
+                "operationId": "createOrderFromCart",
                 "parameters": [
                     {
                         "name": "Accept",
@@ -581,7 +581,7 @@
                     "Products"
                 ],
                 "summary": "عرض تفاصيل منتج واحد",
-                "operationId": "c87fb2e4d617e7b36c712cad358acdb8",
+                "operationId": "getProductById",
                 "parameters": [
                     {
                         "name": "id",

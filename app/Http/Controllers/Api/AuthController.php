@@ -12,6 +12,7 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *      path="/api/register",
+     *      operationId="registerUser",
      *      tags={"Authentication"},
      *      summary="إنشاء حساب جديد",
      *      @OA\RequestBody(
@@ -58,6 +59,7 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *      path="/api/login",
+     *      operationId="loginUser",
      *      tags={"Authentication"},
      *      summary="تسجيل الدخول والحصول على Token",
      *      @OA\RequestBody(
@@ -99,6 +101,7 @@ class AuthController extends Controller
     /**
      * @OA\Get(
      *      path="/api/user",
+     *      operationId="getUserProfile",
      *      tags={"Authentication"},
      *      summary="عرض بيانات المستخدم المسجل حالياً",
      *      security={{"bearerAuth": {}}},
@@ -123,7 +126,8 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *      path="/api/logout",
- *      tags={"Authentication"},
+     *      operationId="logoutUser",
+     *      tags={"Authentication"},
  *      summary="تسجيل الخروج",
  *      security={{"bearerAuth": {}}},
  *      @OA\Parameter(
